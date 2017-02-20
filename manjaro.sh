@@ -38,7 +38,12 @@ while [[ $opcion != "" ]]; do
     "IDES" )
     sudo pacman -S qt5-tools qtcreator gdb gcc-multilib geany geany-plugins atom texlive-core texmaker
       ;;
-
+    "Swappiness" )
+    echo vm.swappiness=40 >> /etc/sysctl.d/99-sysctl.conf
+      ;;
+      "Complementos ATOM" )
+      apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent
+      ;;
     "SUDO" )
     #Defaults	timestamp_timeout=0
       ;;
