@@ -42,7 +42,7 @@ while [[ $opcion != "" ]]; do
     echo vm.swappiness=40 >> /etc/sysctl.d/99-sysctl.conf
       ;;
       "Complementos ATOM" )
-      apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent
+      sudo apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal
       ;;
     "SUDO" )
     #Defaults	timestamp_timeout=0
