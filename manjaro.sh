@@ -13,14 +13,15 @@ while [[ $opcion != "" ]]; do
    --width="700"\
    --height="500"\
    --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
-   TRUE   "Actualizar"        "Actualizar el sistema"                               "-" \
-   FALSE  "Limpiar"           "Limpar la cache de pacman"                           "-" \
-   FALSE  "Software"          "Software basico "                                    "-"\
-   FALSE  "IDES"              "IDE's y editores que uso para programar"             "-"\
-   FALSE  "Swappiness"        "Editar el uso de la swap"                            "$val_swappines"\
-   FALSE  "Complementos ATOM" "Complementos basicos para el editor atom"            "$val_apm"\
-   FALSE  "SUDO"              "Eliminar el periodo de gracia de sudo"               "-"\
-   FALSE  "Cargar SSH"        "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"
+   TRUE   "Actualizar"          "Actualizar el sistema"                               "-" \
+   FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-" \
+   FALSE  "Software"            "Software basico "                                    "-"\
+   FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
+   FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
+   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "$val_apm"\
+   FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
+   FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
+   FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"
 
   )
 
@@ -34,7 +35,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Software" )
-    gksu pacman -S bleachbit vlc-nightly
+    gksu "pacman -S bleachbit vlc-nightly"
       ;;
 
     "IDES" )
@@ -53,6 +54,9 @@ while [[ $opcion != "" ]]; do
     "Cargar SSH" )
     ssh-add ~/.ssh/id_rsa
       ;;
+    "Paquetes Huerfanos" )
+    gksu "pacman -Rnsc $(pacman -Qtdq)"
+    ;;
   esac
 
 done
