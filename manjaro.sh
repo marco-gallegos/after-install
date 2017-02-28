@@ -2,6 +2,7 @@
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 val_apm=$(atom --version)
+val_graciasudo=$(grep "Defaults	timestamp_timeout"  /etc/sudoers)
 user=$(whoami)
 
 
@@ -14,7 +15,7 @@ opcion="basura :v"
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro XFCE"\
+   --title="Algunas opciones comunes para despues de instalar Manjaro "\
    --radiolist\
    --width="700"\
    --height="500"\
@@ -91,7 +92,12 @@ while [[ $opcion != "" ]]; do
 
     "SUDO" )
     #Defaults	timestamp_timeout=0
-    su -c "echo Defaults	timestamp_timeout=0.2 >> /etc/sudoers"
+    su -c "cp /etc/sudoers /etc/sudoers.old"
+    if [[ ${val_graciasudo[0]} == "" ]]; then
+      su -c "echo Defaults	timestamp_timeout=0.3 >> /etc/sudoers"
+    else
+      su -c "sed -i "s%${val_graciasudo[0]}%vm.swappines=0.3%g" /etc/sudoers"
+    fi
       ;;
 
 
@@ -104,7 +110,7 @@ while [[ $opcion != "" ]]; do
 
 
     "Paquetes Huerfanos" )
-    gksu "pacman -Rnsc $(pacman -Qtdq)"
+    sudo pacman -Rnsc $(pacman -Qtdq)
     ;;
 
 
@@ -114,7 +120,7 @@ while [[ $opcion != "" ]]; do
     read nombre_git
     echo "cual es tu email  : "
     read email_git
-    echo editor para los commits
+    echo "editor para los commits :"
     read editor_git
     git config --global user.name $nombre_git
     git config --global user.email $email_git
