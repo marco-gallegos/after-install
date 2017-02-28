@@ -42,7 +42,8 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Software" )
-    sudo pacman -S bleachbit vlc-nightly
+    sudo pacman -S bleachbit vlc-nightly telegram-qt
+    yaourt -S telegram-desktop-bin
     sudo pacman -S unrar zip unzip unace sharutils arj
     yaourt -S jdownloader2
     sudo pacman -S qbittorrent
@@ -90,7 +91,7 @@ while [[ $opcion != "" ]]; do
 
     "SUDO" )
     #Defaults	timestamp_timeout=0
-    gksu "echo Defaults	timestamp_timeout=0.2 >> /etc/sudoers"
+    su -c "echo Defaults	timestamp_timeout=0.2 >> /etc/sudoers"
       ;;
 
 
@@ -113,8 +114,11 @@ while [[ $opcion != "" ]]; do
     read nombre_git
     echo "cual es tu email  : "
     read email_git
+    echo editor para los commits
+    read editor_git
     git config --global user.name $nombre_git
     git config --global user.email $email_git
+    git config --global core.editor $editor_git
     ;;
   esac
 
