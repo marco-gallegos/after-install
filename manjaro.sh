@@ -2,7 +2,7 @@
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 val_apm=$(atom --version)
-val_graciasudo=$(grep "Defaults	timestamp_timeout"  /etc/sudoers)
+val_graciasudo=$(grep "Defaults timestamp_timeout"  /etc/sudoers)
 user=$(whoami)
 
 
@@ -15,7 +15,7 @@ opcion="basura :v"
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro "\
+   --title="Algunas opciones comunes para despues de instalar Manjaro $val_graciasudo"\
    --radiolist\
    --width="700"\
    --height="500"\
@@ -93,10 +93,11 @@ while [[ $opcion != "" ]]; do
     "SUDO" )
     #Defaults	timestamp_timeout=0
     su -c "cp /etc/sudoers /etc/sudoers.old"
+    val_graciasudo=$(sudo grep "Defaults timestamp_timeout"  /etc/sudoers)
     if [[ ${val_graciasudo[0]} == "" ]]; then
-      su -c "echo Defaults	timestamp_timeout=0.3 >> /etc/sudoers"
+      su -c "echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers"
     else
-      su -c "sed -i "s%${val_graciasudo[0]}%vm.swappines=0.3%g" /etc/sudoers"
+      sudo sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.4%g" /etc/sudoers
     fi
       ;;
 
