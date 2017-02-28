@@ -15,7 +15,7 @@ opcion="basura :v"
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro $val_graciasudo"\
+   --title="Algunas opciones comunes para despues de instalar Manjaro"\
    --radiolist\
    --width="700"\
    --height="500"\
