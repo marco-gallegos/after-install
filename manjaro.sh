@@ -12,10 +12,9 @@ fi
 
 opcion="basura :v"
 
-echo "contraseña de cuenta (sudo):"
-read sudo_pass
-echo "contraseña de root :"
-read root_pass
+sudo_pass=$(zenity --password --title="contraseña sudo")
+
+root_pass=$(zenity --password --title="contraseña root")
 
 
 while [[ $opcion != "" ]]; do
@@ -34,7 +33,7 @@ while [[ $opcion != "" ]]; do
    FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
-   FALSE  "Configurar git"      "Configurar nombre y email para git"                  "-"
+   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                  "-"
 
   )
 
@@ -130,9 +129,9 @@ while [[ $opcion != "" ]]; do
     read email_git
     echo "editor para los commits :"
     read editor_git
-    git config --global user.name $nombre_git
-    git config --global user.email $email_git
-    git config --global core.editor $editor_git
+    git config --global user.name "$nombre_git"
+    git config --global user.email "$email_git"
+    git config --global core.editor "$editor_git"
     ;;
   esac
 
