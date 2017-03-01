@@ -2,7 +2,7 @@
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 val_apm=$(atom --version)
-val_graciasudo=$(grep "Defaults timestamp_timeout"  /etc/sudoers)
+val_graciasudo="basura :v"
 user=$(whoami)
 
 
@@ -25,7 +25,7 @@ while [[ $opcion != "" ]]; do
    FALSE  "Software"            "Software basico "                                    "-"\
    FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
    FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
-   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "$val_apm"\
+   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_apm[0]}"\
    FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
@@ -43,18 +43,20 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Software" )
-    sudo pacman -S bleachbit vlc-nightly telegram-qt
+    sudo pacman -S bleachbit vlc-nightly telegram-qt cheese
     yaourt -S telegram-desktop-bin
     sudo pacman -S unrar zip unzip unace sharutils arj
     yaourt -S jdownloader2
-    sudo pacman -S qbittorrent
+    sudo pacman -S qbittorrent k3b youtube-dl ffmpeg obs-studio kodi
     sudo pacman -S openshot
       ;;
 
     "IDES" )
-    sudo pacman -S gdb gcc
+    sudo pacman -S gdb gcc python-pip gitg
+    sudo pip install pygame
     sudo pacman -S qt5-tools qtcreator
-    sudo pacman -S geany geany-plugins atom
+    sudo pacman -S geany geany-plugins atom eric
+    sudo pacman -S intellij-idea-community-edition
     sudo pacman -S texlive-core texmaker
       ;;
 
