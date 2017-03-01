@@ -12,6 +12,11 @@ fi
 
 opcion="basura :v"
 
+echo "contraseña de cuenta (sudo):"
+read sudo_pass
+echo "contraseña de root :"
+read root_pass
+
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
@@ -38,26 +43,26 @@ while [[ $opcion != "" ]]; do
     pamac-updater
       ;;
     "Limpiar" )
-    sudo pacman -Scc
-    yaourt -Scc
+    echo $sudo_pass | sudo -S pacman -Scc
+    echo $sudo_pass | sudo -S yaourt -Scc
       ;;
 
     "Software" )
-    sudo pacman -S bleachbit vlc-nightly telegram-qt cheese
+    echo $sudo_pass | sudo -S  pacman -S bleachbit vlc-nightly telegram-qt cheese
     yaourt -S telegram-desktop-bin
-    sudo pacman -S unrar zip unzip unace sharutils arj
+    echo $sudo_pass | sudo -S pacman -S unrar zip unzip unace sharutils arj
     yaourt -S jdownloader2
-    sudo pacman -S qbittorrent k3b youtube-dl ffmpeg obs-studio kodi
-    sudo pacman -S openshot
+    echo $sudo_pass | sudo -S pacman -S qbittorrent k3b youtube-dl ffmpeg obs-studio kodi
+    echo $sudo_pass | sudo -S pacman -S openshot
       ;;
 
     "IDES" )
-    sudo pacman -S gdb gcc python-pip gitg
-    sudo pip install pygame
-    sudo pacman -S qt5-tools qtcreator
-    sudo pacman -S geany geany-plugins atom eric
-    sudo pacman -S intellij-idea-community-edition
-    sudo pacman -S texlive-core texmaker
+    echo $sudo_pass | sudo -S pacman -S gdb gcc python-pip gitg
+    echo $sudo_pass | sudo -S pip install pygame
+    echo $sudo_pass | sudo -S pacman -S qt5-tools qtcreator
+    echo $sudo_pass | sudo -S pacman -S geany geany-plugins atom eric
+    echo $sudo_pass | sudo -S pacman -S intellij-idea-community-edition
+    echo $sudo_pass | sudo -S pacman -S texlive-core texmaker
       ;;
 
 
@@ -66,18 +71,18 @@ while [[ $opcion != "" ]]; do
       echo existe
     else
       echo creando
-      sudo touch /etc/sysctl.d/99-sysctl.conf
+      echo $sudo_pass | sudo -S touch /etc/sysctl.d/99-sysctl.conf
     fi
     val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
-    sudo cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.old
+    echo $sudo_pass | sudo -S cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.old
 
     echo dame el valor para asignar
     read val_asignar_swap
 
     if [[ ${val_swap[0]} == "" ]]; then
-      su -c "echo vm.swappiness=$val_asignar_swap >> /etc/sysctl.d/99-sysctl.conf"
+      echo $root_pass | su -c "echo vm.swappiness=$val_asignar_swap >> /etc/sysctl.d/99-sysctl.conf"
     else
-      su -c "sed -i "s%${val_swap[0]}%vm.swappines=$val_asignar_swap%g" /etc/sysctl.d/99-sysctl.conf"
+      echo $root_pass | su -c "sed -i "s%${val_swap[0]}%vm.swappiness=$val_asignar_swap%g" /etc/sysctl.d/99-sysctl.conf"
     fi
       ;;
 
@@ -85,21 +90,21 @@ while [[ $opcion != "" ]]; do
     "Complementos ATOM" )
     if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
       echo instalare atom
-      sudo pacman -S atom
+      echo $sudo_pass | sudo -S pacman -S atom
     fi
-    sudo -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax
+    echo $root_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax
       ;;
 
 
 
     "SUDO" )
     #Defaults	timestamp_timeout=0
-    su -c "cp /etc/sudoers /etc/sudoers.old"
-    val_graciasudo=$(sudo grep "Defaults timestamp_timeout"  /etc/sudoers)
+    echo $root_pass | su -c "cp /etc/sudoers /etc/sudoers.old"
+    val_graciasudo=$(echo $sudo_pass | sudo -S grep "Defaults timestamp_timeout"  /etc/sudoers)
     if [[ ${val_graciasudo[0]} == "" ]]; then
-      su -c "echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers"
+      echo $root_pass | su -c "echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers"
     else
-      sudo sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.4%g" /etc/sudoers
+      echo $sudo_pass | sudo -S sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.4%g" /etc/sudoers
     fi
       ;;
 
@@ -113,7 +118,7 @@ while [[ $opcion != "" ]]; do
 
 
     "Paquetes Huerfanos" )
-    sudo pacman -Rnsc $(pacman -Qtdq)
+    echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
     ;;
 
 
