@@ -1,7 +1,9 @@
 #!/bin/bash
+#evitar reescribir los archivos.old
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 val_apm=$(atom --version)
+val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
 user=$(whoami)
 
@@ -19,10 +21,10 @@ root_pass=$(zenity --password --title="contraseña root")
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro"\
+   --title="Algunas opciones comunes para despues de instalar Manjaro$val_grubboot"\
    --radiolist\
-   --width="700"\
-   --height="500"\
+   --width="600"\
+   --height="400"\
    --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
    TRUE   "Actualizar"          "Actualizar el sistema"                               "-" \
    FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-" \
@@ -33,8 +35,8 @@ while [[ $opcion != "" ]]; do
    FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
-   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                  "-"
-
+   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"           "-"\
+   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"
   )
 
   case $opcion in
@@ -127,11 +129,17 @@ while [[ $opcion != "" ]]; do
     read nombre_git
     echo "cual es tu email  : "
     read email_git
-    echo "editor para los commits :"
-    read editor_git
+    echo "editor para los commits : "
+    read editor_git""
     git config --global user.name "$nombre_git"
     git config --global user.email "$email_git"
     git config --global core.editor "$editor_git"
+    ;;
+
+    "Bootsplash" )
+    echo $sudo_pass | sudo -S cp /etc/default/grub /etc/default/grub.old
+    echo $sudo_pass | sudo -S sed -i "s%${val_grubboot[0]}%GRUB_CMDLINE_LINUX_DEFAULT=\"\"%g" /etc/default/grub
+    echo $sudo_pass | sudo -S update-grub
     ;;
   esac
 
