@@ -100,7 +100,12 @@ while [[ $opcion != "" ]]; do
 
     "SUDO" )
     #Defaults	timestamp_timeout=0
-    echo $root_pass | su -c "cp /etc/sudoers /etc/sudoers.old"
+    if [[ -e "/etc/sudoers.old" ]]; then
+      echo ya tienes un archivo old de respaldo
+    else
+      echo creando respaldo .old
+      echo $root_pass | su -c "cp /etc/sudoers "
+    fi
     val_graciasudo=$(echo $sudo_pass | sudo -S grep "Defaults timestamp_timeout"  /etc/sudoers)
     if [[ ${val_graciasudo[0]} == "" ]]; then
       echo $root_pass | su -c "echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers"
@@ -137,7 +142,12 @@ while [[ $opcion != "" ]]; do
     ;;
 
     "Bootsplash" )
-    echo $sudo_pass | sudo -S cp /etc/default/grub /etc/default/grub.old
+    if [[ -e "/etc/default/grub.old" ]]; then
+      echo ya tienes un archivo old de respaldo
+    else
+      echo creando respaldo .old
+      echo $sudo_pass | sudo -S cp /etc/default/grub /etc/default/grub.old
+    fi
     echo $sudo_pass | sudo -S sed -i "s%${val_grubboot[0]}%GRUB_CMDLINE_LINUX_DEFAULT=\"\"%g" /etc/default/grub
     echo $sudo_pass | sudo -S update-grub
     ;;
