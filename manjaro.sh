@@ -117,8 +117,13 @@ while [[ $opcion != "" ]]; do
 
 
     "Cargar SSH" )
-    chmod 700 ~/.ssh/id_rsa
-    ssh-add ~/.ssh/id_rsa
+    if [[ -e "~/.ssh/id_rsa" ]]; then
+      echo cambiando permiso a tu llave
+      chmod 700 ~/.ssh/id_rsa
+      ssh-add ~/.ssh/id_rsa
+    else
+      echo no tienes una llave ssh debes generarla o copiar la que tenias en tu home
+    fi
       ;;
 
 
