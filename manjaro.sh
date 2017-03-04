@@ -16,12 +16,12 @@ opcion="basura :v"
 
 sudo_pass=$(zenity --password --title="contraseña sudo")
 
-root_pass=$(zenity --password --title="contraseña root")
+#root_pass=$(zenity --password --title="contraseña root")
 
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro$val_grubboot"\
+   --title="Algunas opciones comunes para despues de instalar Manjaro"\
    --radiolist\
    --width="600"\
    --height="400"\
@@ -81,9 +81,9 @@ while [[ $opcion != "" ]]; do
     read val_asignar_swap
 
     if [[ ${val_swap[0]} == "" ]]; then
-      echo $root_pass | su -c "echo vm.swappiness=$val_asignar_swap >> /etc/sysctl.d/99-sysctl.conf"
+      echo $sudo_pass | sudo -s "echo vm.swappiness=$val_asignar_swap >> /etc/sysctl.d/99-sysctl.conf"
     else
-      echo $root_pass | su -c "sed -i "s%${val_swap[0]}%vm.swappiness=$val_asignar_swap%g" /etc/sysctl.d/99-sysctl.conf"
+      echo $sudo_pass | sudo -S sed -i "s%${val_swap[0]}%vm.swappiness=$val_asignar_swap%g" /etc/sysctl.d/99-sysctl.conf
     fi
       ;;
 
@@ -93,7 +93,7 @@ while [[ $opcion != "" ]]; do
       echo instalare atom
       echo $sudo_pass | sudo -S pacman -S atom
     fi
-    echo $root_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax
+    echo $sudo_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax
       ;;
 
 
@@ -104,11 +104,11 @@ while [[ $opcion != "" ]]; do
       echo ya tienes un archivo old de respaldo
     else
       echo creando respaldo .old
-      echo $root_pass | su -c "cp /etc/sudoers "
+      echo $sudo_pass | sudo -S "cp /etc/sudoers /etc/sudoers.old"
     fi
     val_graciasudo=$(echo $sudo_pass | sudo -S grep "Defaults timestamp_timeout"  /etc/sudoers)
     if [[ ${val_graciasudo[0]} == "" ]]; then
-      echo $root_pass | su -c "echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers"
+      echo $sudo_pass | sudo -S echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers
     else
       echo $sudo_pass | sudo -S sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.4%g" /etc/sudoers
     fi
