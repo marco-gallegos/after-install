@@ -44,8 +44,8 @@ while [[ $opcion != "" ]]; do
     pamac-updater
       ;;
     "Limpiar" )
-    echo $sudo_pass | sudo -S pacman -Scc
-    echo $sudo_pass | sudo -S yaourt -Scc
+    sudo -S pacman -Scc
+    sudo -S yaourt -Scc
       ;;
 
     "Software" )
@@ -108,9 +108,9 @@ while [[ $opcion != "" ]]; do
     fi
     val_graciasudo=$(echo $sudo_pass | sudo -S grep "Defaults timestamp_timeout"  /etc/sudoers)
     if [[ ${val_graciasudo[0]} == "" ]]; then
-      echo $sudo_pass | sudo -S echo "Defaults	timestamp_timeout=0.4" >> /etc/sudoers
+      echo $sudo_pass | sudo -S echo "Defaults	timestamp_timeout=0.1" >> /etc/sudoers
     else
-      echo $sudo_pass | sudo -S sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.4%g" /etc/sudoers
+      echo $sudo_pass | sudo -S sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.1%g" /etc/sudoers
     fi
       ;;
 
@@ -144,6 +144,7 @@ while [[ $opcion != "" ]]; do
     git config --global user.name "$nombre_git"
     git config --global user.email "$email_git"
     git config --global core.editor "$editor_git"
+    git config color.ui true
     ;;
 
     "Bootsplash" )
