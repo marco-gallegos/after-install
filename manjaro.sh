@@ -2,36 +2,40 @@
 #evitar reescribir los archivos.old
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
-val_apm=$(atom --version)
+val_atom=$(atom --version)
+host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
 user=$(whoami)
 
+function aviso {
+  zenity --notification --window-icon="info" --text="$1"
+}
 
-if [[ ! $val_apm ]]; then
-  val_apm="---- No tienes instalado atom -----"
+if [[ ! $val_atom ]]; then
+  val_atom="No tienes instalado atom"
+  aviso $val_atom
 fi
 
 opcion="basura :v"
-
-sudo_pass=$(zenity --password --title="contraseña sudo")
-
+#sudo_pass=$(zenity --password --title="contraseña sudo")
+sudo_pass="cucei"
 #root_pass=$(zenity --password --title="contraseña root")
-
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
    --title="Algunas opciones comunes para despues de instalar Manjaro"\
    --radiolist\
-   --width="600"\
-   --height="400"\
+   --width="700"\
+   --height="500"\
    --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
-   TRUE   "Actualizar"          "Actualizar el sistema"                               "-" \
-   FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-" \
+   TRUE   "Actualizar"          "Actualizar el sistema"                               "-"\
+   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                         "$host_name"\
+   FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-"\
    FALSE  "Software"            "Software basico "                                    "-"\
    FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
    FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
-   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_apm[0]}"\
+   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_atom[0]}"\
    FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
@@ -41,27 +45,51 @@ while [[ $opcion != "" ]]; do
 
   case $opcion in
     "Actualizar" )
-    pamac-updater
+    yaourt -Syua
+    echo $sudo_pass | sudo -S pip install --upgrade pip
       ;;
+
+    "Migracion" )
+    directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
+    directorio_destino+="/"
+    directorio_destino+=$host_name
+    mkdir $directorio_destino
+    directorio_destino+="/"
+    directorio_destino+=$user
+    mkdir $directorio_destino
+    cp -R $HOME/.ssh $directorio_destino
+    7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z /srv/http
+    for x in `ls $HOME`;
+    do
+    cp -R $HOME/$x $directorio_destino;
+    done
+    aviso "respaldo terminado"
+      ;;
+
     "Limpiar" )
     sudo -S pacman -Scc
     sudo -S yaourt -Scc
       ;;
-
     "Software" )
-    echo $sudo_pass | sudo -S  pacman -S bleachbit vlc-nightly telegram-qt cheese
+    echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
+    echo $sudo_pass | sudo -S pacman -S mariadb mariadb-clients php phpmyadmin
+    echo $sudo_pass | sudo -S pacman -S bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
+    echo $sudo_pass | sudo -S pacman -S unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
+    echo $sudo_pass | sudo -S pacman -S qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
+    echo $sudo_pass | sudo -S pacman -S openshot obs-studio htop lshw mysql-workbench plank thunderbird
+    echo $sudo_pass | sudo -S pacman -S gimp remmina freeglut gedit gedit-plugins
     yaourt -S telegram-desktop-bin
-    echo $sudo_pass | sudo -S pacman -S unrar zip unzip unace sharutils arj
     yaourt -S jdownloader2
-    echo $sudo_pass | sudo -S pacman -S qbittorrent k3b youtube-dl ffmpeg obs-studio kodi
-    echo $sudo_pass | sudo -S pacman -S openshot
+    yaourt -S google-chrome
+    yaourt -S dbeaver-ce
+    yaourt -S matcha-gtk-theme
+    yaourt -S spotify multisystem sublime-text-dev
       ;;
 
     "IDES" )
-    echo $sudo_pass | sudo -S pacman -S gdb gcc python-pip gitg
-    echo $sudo_pass | sudo -S pip install pygame
+    echo $sudo_pass | sudo -S pacman -S gdb gcc python-pip gitg git
     echo $sudo_pass | sudo -S pacman -S qt5-tools qtcreator
-    echo $sudo_pass | sudo -S pacman -S geany geany-plugins atom eric
+    echo $sudo_pass | sudo -S pacman -S geany geany-plugins atom eric pycharm-community-edition codeblocks
     echo $sudo_pass | sudo -S pacman -S intellij-idea-community-edition
     echo $sudo_pass | sudo -S pacman -S texlive-core texmaker
       ;;
@@ -93,7 +121,7 @@ while [[ $opcion != "" ]]; do
       echo instalare atom
       echo $sudo_pass | sudo -S pacman -S atom
     fi
-    echo $sudo_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax atom-material-ui seti-syntax
+    echo $sudo_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax atom-material-ui seti-syntax linter-ui-default
       ;;
 
 
