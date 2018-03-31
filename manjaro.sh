@@ -24,7 +24,7 @@ if [[ ! $val_atom ]]; then
   val_atom="Atom\nNo tienes instalado atom"
   aviso $val_atom
   aviso "Atom\nInstalando atom"
-  echo $sudo_pass | sudo -S pacman -S --noconfirmation atom
+  echo $sudo_pass | sudo -S pacman -S --noconfirm atom
   aviso "Atom\nAhora esta instalado en tu sistema"
 fi
 
