@@ -13,13 +13,12 @@ function aviso {
 }
 
 if [[ ! $val_atom ]]; then
-  val_atom="No tienes instalado atom"
+  val_atom="Atom\nNo tienes instalado atom"
   aviso $val_atom
 fi
 
 opcion="basura :v"
-#sudo_pass=$(zenity --password --title="contraseña sudo")
-sudo_pass="cucei"
+sudo_pass=$(zenity --password --title="contraseña sudo")
 #root_pass=$(zenity --password --title="contraseña root")
 
 while [[ $opcion != "" ]]; do
@@ -40,7 +39,8 @@ while [[ $opcion != "" ]]; do
    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
    FALSE  "Configurar git"      "Configurar nombre,email y editor para git"           "-"\
-   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"
+   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"\
+   FALSE  "Barra Pacman"        "cambiar barra de progreso de pacman por un pacman"   "-"
   )
 
   case $opcion in
@@ -58,7 +58,7 @@ while [[ $opcion != "" ]]; do
     directorio_destino+=$user
     mkdir $directorio_destino
     cp -R $HOME/.ssh $directorio_destino
-    7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z /srv/http
+    echo $sudo_pass | sudo -S 7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z /srv/http
     for x in `ls $HOME`;
     do
     cp -R $HOME/$x $directorio_destino;
@@ -71,13 +71,13 @@ while [[ $opcion != "" ]]; do
     sudo -S yaourt -Scc
       ;;
     "Software" )
-    echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
     echo $sudo_pass | sudo -S pacman -S mariadb mariadb-clients php phpmyadmin
     echo $sudo_pass | sudo -S pacman -S bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
     echo $sudo_pass | sudo -S pacman -S unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
     echo $sudo_pass | sudo -S pacman -S qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
     echo $sudo_pass | sudo -S pacman -S openshot obs-studio htop lshw mysql-workbench plank thunderbird
     echo $sudo_pass | sudo -S pacman -S gimp remmina freeglut gedit gedit-plugins
+    echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
     yaourt -S telegram-desktop-bin
     yaourt -S jdownloader2
     yaourt -S google-chrome
@@ -184,6 +184,17 @@ while [[ $opcion != "" ]]; do
     fi
     echo $sudo_pass | sudo -S sed -i "s%${val_grubboot[0]}%GRUB_CMDLINE_LINUX_DEFAULT=\"\"%g" /etc/default/grub
     echo $sudo_pass | sudo -S update-grub
+    ;;
+
+    "Barra Pacman")
+    if [[ -e "/etc/pacman.conf.bak" ]]; then
+      aviso "ya tienes un respaldo"
+    else
+      aviso "realizando respaldo"
+      echo sudo_pass | sudo -S cp /etc/pacman.conf /etc/pacman.conf.bak
+    fi
+    echo $sudo_pass | sudo -S sed -i "s%#Color%Color\nILoveCandy%g" /etc/pacman.conf
+    aviso "Pacman\nAhora pacman esta en la terminal"
     ;;
   esac
 
