@@ -71,7 +71,7 @@ while [[ $opcion != "" ]]; do
     sudo -S yaourt -Scc
       ;;
     "Software" )
-    echo $sudo_pass | sudo -S pacman -S curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting 
+    echo $sudo_pass | sudo -S pacman -Sy curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting 
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
     echo $sudo_pass | sudo -S pacman -S mariadb mariadb-clients php phpmyadmin
     echo $sudo_pass | sudo -S pacman -S bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
