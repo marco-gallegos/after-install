@@ -45,7 +45,7 @@ while [[ $opcion != "" ]]; do
 
   case $opcion in
     "Actualizar" )
-    echo $sudo_pass | sudo -S pacman-mirrors -g
+    echo $sudo_pass | sudo -S pacman-mirrors -G
     yaourt -Syua --noconfirm
     echo $sudo_pass | sudo -S pip install --upgrade pip
       ;;
