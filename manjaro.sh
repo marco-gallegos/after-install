@@ -71,14 +71,14 @@ while [[ $opcion != "" ]]; do
     sudo -S yaourt -Scc
       ;;
     "Software" )
-    echo $sudo_pass | sudo -S pacman -Sy curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting 
+    echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting 
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-    echo $sudo_pass | sudo -S pacman -S mariadb mariadb-clients php phpmyadmin
-    echo $sudo_pass | sudo -S pacman -S bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
-    echo $sudo_pass | sudo -S pacman -S unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
-    echo $sudo_pass | sudo -S pacman -S qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
-    echo $sudo_pass | sudo -S pacman -S openshot obs-studio htop lshw mysql-workbench plank thunderbird
-    echo $sudo_pass | sudo -S pacman -S gimp remmina freeglut gedit gedit-plugins
+    echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
+    echo $sudo_pass | sudo -S pacman -S --noconfirm bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
+    echo $sudo_pass | sudo -S pacman -S --noconfirm unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
+    echo $sudo_pass | sudo -S pacman -S --noconfirm qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
+    echo $sudo_pass | sudo -S pacman -S --noconfirm openshot obs-studio htop lshw mysql-workbench plank thunderbird
+    echo $sudo_pass | sudo -S pacman -S --noconfirm gimp remmina freeglut gedit gedit-plugins
     echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
     yaourt -S telegram-desktop-bin
     yaourt -S jdownloader2
@@ -89,11 +89,11 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "IDES" )
-    echo $sudo_pass | sudo -S pacman -S gdb gcc python-pip gitg git
-    echo $sudo_pass | sudo -S pacman -S qt5-tools qtcreator
-    echo $sudo_pass | sudo -S pacman -S geany geany-plugins atom eric pycharm-community-edition codeblocks
-    echo $sudo_pass | sudo -S pacman -S intellij-idea-community-edition
-    echo $sudo_pass | sudo -S pacman -S texlive-core texmaker
+    echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git
+    echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
+    echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
+    echo $sudo_pass | sudo -S pacman -S --noconfirm intellij-idea-community-edition
+    echo $sudo_pass | sudo -S pacman -S --noconfirm texlive-core texmaker
       ;;
 
 
@@ -121,7 +121,7 @@ while [[ $opcion != "" ]]; do
     "Complementos ATOM" )
     if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
       echo instalare atom
-      echo $sudo_pass | sudo -S pacman -S atom
+      echo $sudo_pass | sudo -S pacman -S --noconfirm atom
     fi
     echo $sudo_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax atom-material-ui seti-syntax linter-ui-default
       ;;
