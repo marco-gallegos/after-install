@@ -2,11 +2,11 @@
 #evitar reescribir los archivos.old
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
-val_atom=$(atom --version)
 host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
 user=$(whoami)
+val_atom=$(atom --version)
 val_yaourt=$(yaourt -V)
 val_pip=$(pip -V)
 
@@ -21,12 +21,29 @@ sudo_pass=$(zenity --password --title="contraseña sudo")
 #root_pass=$(zenity --password --title="contraseña root")
 
 if [[ ! $val_atom ]]; then
-  val_atom="Atom\nNo tienes instalado atom"
-  aviso $val_atom
+  aviso "Atom\nNo tienes instalado atom"
   aviso "Atom\nInstalando atom"
   echo $sudo_pass | sudo -S pacman -S --noconfirm atom
   aviso "Atom\nAhora esta instalado en tu sistema"
 fi
+
+if [[ ! $val_yaourt ]]; then
+  aviso "Yaourt\nNo tienes instalado yaourt"
+  aviso "Yaout\nInstalando yaourt"
+  echo $sudo_pass | sudo -S pacman -S --noconfirm yaourt
+  aviso "Yaourt\nAhora esta instalado en tu sistema"
+fi
+
+if [[ ! $val_pip ]]; then
+  aviso "Python PIP\nNo tienes instalado python-pip"
+  aviso "Python PIP\nInstalando Pyton PIP"
+  echo $sudo_pass | sudo -S pacman -S --noconfirm python-pip
+  aviso "Python PIP\nAhora esta instalado en tu sistema"
+fi
+
+val_atom=$(atom --version)
+val_yaourt=$(yaourt -V)
+val_pip=$(pip -V)
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
