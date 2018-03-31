@@ -7,19 +7,26 @@ host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
 user=$(whoami)
+val_yaourt=$(yaourt -V)
+val_pip=$(pip -V)
 
 function aviso {
+  echo "$1"
   zenity --notification --window-icon="info" --text="$1"
 }
 
-if [[ ! $val_atom ]]; then
-  val_atom="Atom\nNo tienes instalado atom"
-  aviso $val_atom
-fi
 
 opcion="basura :v"
 sudo_pass=$(zenity --password --title="contraseña sudo")
 #root_pass=$(zenity --password --title="contraseña root")
+
+if [[ ! $val_atom ]]; then
+  val_atom="Atom\nNo tienes instalado atom"
+  aviso $val_atom
+  aviso "Atom\nInstalando atom"
+  echo $sudo_pass | sudo
+  aviso "Atom\nAhora esta instalado en tu sistema"
+fi
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
