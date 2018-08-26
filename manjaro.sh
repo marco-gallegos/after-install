@@ -96,7 +96,7 @@ while [[ $opcion != "" ]]; do
     sudo -S yaourt -Scc
       ;;
     "Software" )
-    echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base
+    echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc jdk9-openjdk jre9-openjdk
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
     echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
     echo $sudo_pass | sudo -S pacman -S --noconfirm bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
@@ -110,11 +110,13 @@ while [[ $opcion != "" ]]; do
     yaourt -S google-chrome
     yaourt -S dbeaver-ce
     yaourt -S matcha-gtk-theme
-    yaourt -S spotify multisystem sublime-text-dev
+    #spotify
+    gpg --keyserver hkps://pgp.mit.edu --recv-keys 0DF731E45CE24F27EEEB1450EFDC8610341D9410
+    yaourt -S spotify-stable multisystem sublime-text-dev
       ;;
 
     "IDES" )
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git
+    echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git jdk9-openjdk jre9-openjdk
     echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
     echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
     echo $sudo_pass | sudo -S pacman -S --noconfirm intellij-idea-community-edition
