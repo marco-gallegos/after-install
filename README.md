@@ -18,3 +18,4 @@ shell scripts para operaciones comunes despues de instalar distros linux, pensad
 
 * manjaro
 * arch linux
+* fedora
