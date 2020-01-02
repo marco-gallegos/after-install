@@ -1,80 +1,83 @@
 #!/bin/bash
-#evitar reescribir los archivos.old
+: '
+* @author Marco A Gallegos
+* @date 2020-01-01
+* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
+'
+
+# bug evitar reescribir los archivos.old
 val_swappines=$(cat /proc/sys/vm/swappiness)
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
-user=$(whoami)
 val_atom=$(atom --version)
-val_yaourt=$(yaourt -V)
+val_python=$(python --version)
+val_zsh=$(zsh --version)
+user=$(whoami)
 val_pip=$(pip -V)
+val_zenity=$(zenity --version)
 
+
+# auxiliar para mostrar tanto notificaciones push como logs
 function aviso {
   echo "$1"
   zenity --notification --window-icon="info" --text="$1"
 }
 
-
 opcion="basura :v"
-sudo_pass=$(zenity --password --title="contraseña sudo")
-#root_pass=$(zenity --password --title="contraseña root")
-
-if [[ ! $val_atom ]]; then
-  aviso "Atom\nNo tienes instalado atom"
-  aviso "Atom\nInstalando atom"
-  echo $sudo_pass | sudo -S pacman -S --noconfirm atom
-  aviso "Atom\nAhora esta instalado en tu sistema"
-fi
-
-if [[ ! $val_yaourt ]]; then
-  aviso "Yaourt\nNo tienes instalado yaourt"
-  aviso "Yaout\nInstalando yaourt"
-  echo $sudo_pass | sudo -S pacman -S --noconfirm yaourt
-  aviso "Yaourt\nAhora esta instalado en tu sistema"
-fi
+# sudo_pass=$(zenity --password --title="contraseña sudo")
+# root_pass=$(zenity --password --title="contraseña root")
 
 if [[ ! $val_pip ]]; then
-  aviso "Python PIP\nNo tienes instalado python-pip"
   aviso "Python PIP\nInstalando Pyton PIP"
   echo $sudo_pass | sudo -S pacman -S --noconfirm python-pip
   aviso "Python PIP\nAhora esta instalado en tu sistema"
 fi
 
-val_atom=$(atom --version)
-val_yaourt=$(yaourt -V)
+if [[ ! $val_zenity ]]; then
+  aviso "instalando zenity"
+  echo $sudo_pass | sudo -S dnf install zenity -y
+fi
+
 val_pip=$(pip -V)
 
-while [[ $opcion != "" ]]; do
+while [[ $opcion != "" && $val_zenity ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro"\
+   --title="Post install on $host_name | $user"\
    --radiolist\
-   --width="700"\
+   --width="800"\
    --height="500"\
-   --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
-   TRUE   "Actualizar"          "Actualizar el sistema"                               "-"\
-   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                         "$host_name"\
-   FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-"\
-   FALSE  "Software"            "Software basico "                                    "-"\
-   FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
-   FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
-   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_atom[0]}"\
-   FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
-   FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
-   FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
-   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"           "-"\
-   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"\
-   FALSE  "Barra Pacman"        "cambiar barra de progreso de pacman por un pacman"   "-"
+   --column="" --column="Opcion" --column="Descripcion" --column="Info"\
+   TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
+   FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
+   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "$host_name"\
+   FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
+   FALSE  "Software"            "Software basico "                                                            "-"\
+   FALSE  "IDES"                "IDE's y editores que uso para programar"                                     "-"\
+   FALSE  "Swappiness"          "Editar el uso de la swap"                                                    "$val_swappines"\
+   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"                                    "${val_atom[0]}"\
+   FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"                                   "-"\
+   FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"                              "-"\
+   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
+   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"
   )
 
   case $opcion in
     "Actualizar" )
-    echo $sudo_pass | sudo -S pacman-mirrors -G
-    yaourt -Syua --noconfirm
+    echo $sudo_pass | sudo -S dnf upgrade -y --refresh
     echo $sudo_pass | sudo -S pip install --upgrade pip
+      ;;
+    
+    "Actualizar++" )
+    echo $sudo_pass | sudo -S dnf clean all && sudo -S dnf upgrade -y --refresh && sudo -S snap refresh 
+    echo $sudo_pass | sudo flatpak update && sudo -S npm update -g && composer global update
+    sudo -S pip install --upgrade pip
+    sh $ZSH/tools/upgrade.sh
       ;;
 
     "Migracion" )
+    exit
     directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
     directorio_destino+="/"
     directorio_destino+=$host_name
@@ -92,10 +95,11 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Limpiar" )
-    sudo -S pacman -Scc
-    sudo -S yaourt -Scc
+    sudo -S dnf clean all
       ;;
+
     "Software" )
+    exit
     echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc jdk9-openjdk jre9-openjdk
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
     echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
@@ -116,6 +120,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "IDES" )
+    exit
     echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git jdk9-openjdk jre9-openjdk
     echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
     echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
@@ -125,6 +130,7 @@ while [[ $opcion != "" ]]; do
 
 
     "Swappiness" )
+    exit
     if [[ -e "/etc/sysctl.d/99-sysctl.conf" ]]; then
       echo existe
     else
@@ -146,6 +152,7 @@ while [[ $opcion != "" ]]; do
 
 
     "Complementos ATOM" )
+    exit
     if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
       echo instalare atom
       echo $sudo_pass | sudo -S pacman -S --noconfirm atom
@@ -154,26 +161,8 @@ while [[ $opcion != "" ]]; do
       ;;
 
 
-
-    "SUDO" )
-    #Defaults	timestamp_timeout=0
-    if [[ -e "/etc/sudoers.old" ]]; then
-      echo ya tienes un archivo old de respaldo
-    else
-      echo creando respaldo .old
-      echo $sudo_pass | sudo -S "cp /etc/sudoers /etc/sudoers.old"
-    fi
-    val_graciasudo=$(echo $sudo_pass | sudo -S grep "Defaults timestamp_timeout"  /etc/sudoers)
-    if [[ ${val_graciasudo[0]} == "" ]]; then
-      echo $sudo_pass | sudo -S echo "Defaults	timestamp_timeout=0.1" >> /etc/sudoers
-    else
-      echo $sudo_pass | sudo -S sed -i "s%${val_graciasudo[0]}%Defaults timestamp_timeout=0.1%g" /etc/sudoers
-    fi
-      ;;
-
-
-
     "Cargar SSH" )
+    exit
     if [[ -e "~/.ssh/id_rsa" ]]; then
       echo cambiando permiso a tu llave
       chmod 700 ~/.ssh/id_rsa
@@ -186,6 +175,7 @@ while [[ $opcion != "" ]]; do
 
 
     "Paquetes Huerfanos" )
+    exit
     echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
     ;;
 
@@ -204,7 +194,9 @@ while [[ $opcion != "" ]]; do
     git config color.ui true
     ;;
 
+
     "Bootsplash" )
+    exit
     if [[ -e "/etc/default/grub.old" ]]; then
       echo ya tienes un archivo old de respaldo
     else
@@ -214,17 +206,8 @@ while [[ $opcion != "" ]]; do
     echo $sudo_pass | sudo -S sed -i "s%${val_grubboot[0]}%GRUB_CMDLINE_LINUX_DEFAULT=\"\"%g" /etc/default/grub
     echo $sudo_pass | sudo -S update-grub
     ;;
-
-    "Barra Pacman")
-    if [[ -e "/etc/pacman.conf.bak" ]]; then
-      aviso "ya tienes un respaldo"
-    else
-      aviso "realizando respaldo"
-      echo sudo_pass | sudo -S cp /etc/pacman.conf /etc/pacman.conf.bak
-    fi
-    echo $sudo_pass | sudo -S sed -i "s%#Color%Color\nILoveCandy%g" /etc/pacman.conf
-    aviso "Pacman\nAhora pacman esta en la terminal"
-    ;;
   esac
 
 done
+
+echo "saliendo del script"
