@@ -4,8 +4,26 @@
 * @date 2020-01-01
 * @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
 '
-# especificamos que config es un array
-declare -A config
+#primer paso validar que sea fedora en version 30 o superior
+distro_text=$(grep "^NAME" /etc/os-release)
+version_text=$(grep "^VERSION_ID" /etc/os-release)
+IFS='=' # space is set as delimiter
+read -ra distro_arr <<< "$distro_text" # distro_text is read into an array as tokens separated by IFS
+read -ra version_arr <<< "$version_text" 
+
+
+distro_name=${distro_arr[1]}
+distro_version=${version_arr[1]}
+
+if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
+ echo "no es una distro fedora soportada"
+  exit
+else
+  echo "distro soportada"
+fi
+
+
+declare -A config # especificamos que config es un array
 config=(
   [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
   [ok]='nadamas'
