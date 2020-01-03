@@ -4,54 +4,137 @@
 * @date 2020-01-01
 * @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
 '
+# especificamos que config es un array
+declare -A config
+config=(
+  [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+  [ok]='nadamas'
+
+  [vscoderepo]='
+  [code]
+  name=Visual Studio Code
+  baseurl=https://packages.microsoft.com/yumrepos/vscode
+  enabled=1
+  gpgcheck=1
+  gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+  '
+  [vscoderepogpg]='https://packages.microsoft.com/keys/microsoft.asc'
+  [vscodefilename]='vscode.repo'
+  
+  [repopath]='/etc/yum.repos.d/'
+)
+
 
 # bug evitar reescribir los archivos.old
+# el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
+# este archivo almacena el valor swapiness editado por el usuario
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
+
 host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
-val_atom=$(atom --version)
-val_python=$(python --version)
-val_zsh=$(zsh --version)
 user=$(whoami)
-val_pip=$(pip -V)
+val_enforce=$(getenforce)
+
+# aplicaciones que se deben instalar
 val_zenity=$(zenity --version)
+val_zsh=$(zsh --version)
+val_oh_my_zsh=$(echo $ZSH)
+val_python=$(python --version)
+val_pip=$(pip -V)
+val_git=$(git --version)
+
+# de aca para abajo pendiente de implementar
+val_code=$(code --version)
+val_codium=$(code --version)
+val_node=$(node --version)
+val_node=$(npm --version)
+val_php=$(php --version)
+val_composer=$(code --version)
+val_docker=$(docker --version)
+
+# tiendas de software
+val_snap=$(snap --version)
+val_flatpak=$(flatpak --version)
+
 
 
 # auxiliar para mostrar tanto notificaciones push como logs
-function aviso {
+aviso() {
   echo "$1"
-  zenity --notification --window-icon="info" --text="$1"
+  if $2 ; then
+    zenity --notification --window-icon="info" --text="$1"
+  fi
 }
 
 opcion="basura :v"
-# sudo_pass=$(zenity --password --title="contraseña sudo")
+sudo_pass=$(zenity --password --title="contraseña sudo")
 # root_pass=$(zenity --password --title="contraseña root")
-
-if [[ ! $val_pip ]]; then
-  aviso "Python PIP\nInstalando Pyton PIP"
-  echo $sudo_pass | sudo -S pacman -S --noconfirm python-pip
-  aviso "Python PIP\nAhora esta instalado en tu sistema"
+if [[ ! $sudo_pass ]]; then
+  exit
 fi
 
+
+# instalamos todo aquello necesario
 if [[ ! $val_zenity ]]; then
-  aviso "instalando zenity"
+  aviso "Instalando zenity"
   echo $sudo_pass | sudo -S dnf install zenity -y
 fi
+
+if [[ ! $val_zsh ]]; then
+  aviso "Instalando zsh"
+  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "se ha instalado zsh" true
+fi
+
+if [[ ! $val_oh_my_zsh ]]; then
+  aviso "Instalando zsh"
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "se ha instalado oh ny zsh" true
+fi
+
+if [[ ! $val_python ]]; then
+  aviso "Instalando python"
+  echo $sudo_pass | sudo -S dnf install python-pip -y
+  aviso "Python ahora esta instalado" true
+fi
+
+if [[ ! $val_pip ]]; then
+  aviso "Instalando Pyton PIP"
+  echo $sudo_pass | sudo -S dnf python-pip -y
+  aviso "Python PIP esta instalado" true
+fi
+
+if [[ ! $val_git ]]; then
+  aviso "Instalando git"
+  echo $sudo_pass | sudo -S dnf git gitflow -y
+  aviso "Git se ha instalado" true
+fi
+
+
+# pendiente
+if [[ ! $val_code ]]; then
+  aviso "Instalando vscode"
+  # echo $sudo_pass | sudo -S dnf python-pip -y
+  aviso "VsCode se ha instalado" true
+fi
+
+
 
 val_pip=$(pip -V)
 
 while [[ $opcion != "" && $val_zenity ]]; do
   opcion=$(zenity --list\
-   --title="Post install on $host_name | $user"\
+   --title="Post install on $host_name | $user SELinux $val_enforce"\
    --radiolist\
    --width="800"\
    --height="500"\
    --column="" --column="Opcion" --column="Descripcion" --column="Info"\
    TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
    FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
-   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "$host_name"\
+   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
    FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
    FALSE  "Software"            "Software basico "                                                            "-"\
    FALSE  "IDES"                "IDE's y editores que uso para programar"                                     "-"\

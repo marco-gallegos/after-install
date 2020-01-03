@@ -16,6 +16,5 @@ shell scripts para operaciones comunes despues de instalar distros linux, pensad
 
 ###### Soporte para :
 
-* manjaro
-* arch linux
+* manjaro / arch linux
 * fedora
