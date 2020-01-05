@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+    fedorafter:
+        build: .
+        container_name: fedorafter
+        working_dir: /app
+        volumes:
+            - ./:/app
+        restart: always
