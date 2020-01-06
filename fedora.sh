@@ -16,7 +16,7 @@ distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
 
 if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
- echo "no es una distro fedora soportada"
+  echo "no es una distro fedora soportada"
   exit
 else
   echo "distro soportada"
@@ -145,23 +145,23 @@ val_pip=$(pip -V)
 
 while [[ $opcion != "" && $val_zenity ]]; do
   opcion=$(zenity --list\
-   --title="Post install on $host_name | $user SELinux $val_enforce"\
-   --radiolist\
-   --width="800"\
-   --height="500"\
-   --column="" --column="Opcion" --column="Descripcion" --column="Info"\
-   TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
-   FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
-   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
-   FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
-   FALSE  "Software"            "Software basico "                                                            "-"\
-   FALSE  "IDES"                "IDE's y editores que uso para programar"                                     "-"\
-   FALSE  "Swappiness"          "Editar el uso de la swap"                                                    "$val_swappines"\
-   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"                                    "${val_atom[0]}"\
-   FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"                                   "-"\
-   FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"                              "-"\
-   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
-   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"
+    --title="Post install on $host_name | $user SELinux $val_enforce"\
+    --radiolist\
+    --width="800"\
+    --height="500"\
+    --column="" --column="Opcion" --column="Descripcion" --column="Info"\
+    TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
+    FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
+    FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
+    FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
+    FALSE  "Software"            "Software basico "                                                            "-"\
+    FALSE  "IDES"                "IDE's y editores que uso para programar"                                     "-"\
+    FALSE  "Swappiness"          "Editar el uso de la swap"                                                    "$val_swappines"\
+    FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"                                    "${val_atom[0]}"\
+    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"                                   "-"\
+    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"                              "-"\
+    FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
+    FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"
   )
 
   case $opcion in
