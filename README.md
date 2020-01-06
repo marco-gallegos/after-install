@@ -1,7 +1,20 @@
-# after-install
-shell scripts para operaciones comunes despues de instalar distros linux
+# After Innstall
 
-###### soporte para :
+shell scripts para operaciones comunes despues de instalar distros linux, pensado principalmente para desarrolladores
 
-* manjaro
-* arch linux
+## Dependencias
+
+* zenity
+
+
+## To Do
+
+- [ ] docker file for testing
+- [ ] full fedora support
+- [ ] rsync backups
+
+
+###### Soporte para :
+
+* manjaro / arch linux
+* fedora
