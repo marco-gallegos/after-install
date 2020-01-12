@@ -3,6 +3,8 @@
 * @author Marco A Gallegos
 * @date 2020-01-01
 * @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora sin gui
+* consideramso que provee un argumento o no
+* siempre trabajamos sobre la distro mas nueva
 '
 #primer paso validar que sea fedora en version 30 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
@@ -15,15 +17,20 @@ read -ra version_arr <<< "$version_text"
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
 
-if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
+if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 31 ]]; then
   echo "no es una distro fedora soportada"
   exit
 else
   echo "distro soportada"
+  echo "sudo password : "
+  read -s sudo_pass
+  if [[ ! $sudo_pass ]]; then
+    exit
+  fi
 fi
 
 
-declare -A config # especificamos que config es un array
+declare -A config # especificamos que config es un array, se puede recorrer 
 config=(
   [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
   [ok]='nadamas'
@@ -42,8 +49,31 @@ config=(
   [repopath]='/etc/yum.repos.d/'
 )
 
+declare -A opciones
+# opciones para mostrar en el menu
+opciones=(
+  [Actualizar]="Actualizar el sistema (solo dnf)\n"
+  [Actualizar++]="Actualizacion agresiva (dnf con limpieza de cache, snap, flatpak, etc)\n"
+  [Migracion]="Respaldo Pre formateo de PC\n"
+  [Limpar]="Limpar la cache de DNF\n"
+  [Software]="Software basico\n"
+  [IDES]="IDE's y editores que uso para programar\n"
+  [Swappiness]="Editar el uso de la swap\n"
+  [ComplementosAtom]="Complementos basicos para el editor atom\n"
+  [CargarSSH]="Reutilizar tu clave ssh copiada en ~/.ssh\n"
+  [PaquetesHuerfanos]="Eliminar paquetes ya no requeredos del sistema\n"
+  [Configurargit]="Configurar nombre,email y editor para git\n"
+  [Bootsplash]="Eliminar el bootsplash solo texto\n" 
+)
+# vicular los indices con un numero para eleccion sencilla en menu
+declare -A opciones_indices
+index=0
+for valor in ${!opciones[@]}
+do
+  opciones_indices[$index]=$valor
+  index=`expr $index + 1`
+done
 
-# bug evitar reescribir los archivos.old
 # el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
 # este archivo almacena el valor swapiness editado por el usuario
@@ -76,82 +106,15 @@ val_snap=$(snap --version)
 val_flatpak=$(flatpak --version)
 
 
-
+# funciones
 # auxiliar para mostrar tanto notificaciones push como logs
 aviso() {
   echo "$1"
 }
 
-opcion="basura :v"
-echo "sudo password : "
-read -s sudo_pass
-if [[ ! $sudo_pass ]]; then
-  exit
-fi
-
-
-# instalamos todo aquello necesario
-if [[ ! $val_zsh ]]; then
-  aviso "Instalando zsh"
-  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado zsh"
-fi
-
-if [[ ! $val_oh_my_zsh ]]; then
-  aviso "Instalando zsh"
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado oh ny zsh" true
-fi
-
-if [[ ! $val_python ]]; then
-  aviso "Instalando python"
-  echo $sudo_pass | sudo -S dnf install python-pip -y
-  aviso "Python ahora esta instalado" true
-fi
-
-if [[ ! $val_pip ]]; then
-  aviso "Instalando Pyton PIP"
-  echo $sudo_pass | sudo -S dnf python-pip -y
-  aviso "Python PIP esta instalado" true
-fi
-
-if [[ ! $val_git ]]; then
-  aviso "Instalando git"
-  echo $sudo_pass | sudo -S dnf git gitflow -y
-  aviso "Git se ha instalado" true
-fi
-
-
-# pendiente
-if [[ ! $val_code ]]; then
-  aviso "Instalando vscode"
-  # echo $sudo_pass | sudo -S dnf python-pip -y
-  aviso "VsCode se ha instalado" true
-fi
-
-
-
-val_pip=$(pip -V)
-
-while [[ $opcion != "" ]]; do
-    echo -e "Info \n"\
-    "Actualizar el sistema (solo dnf)\n"                                          \
-    "Actualizacion agresiva (dnf con limpieza de cache, snap, flatpak, etc)\n"    \
-    "Respaldo Pre formateo de PC\n"                                               \
-    "Limpar la cache de pacman\n"                                                 \
-    "Software basico\n"                                                            \
-    "IDE's y editores que uso para programar\n"                                     \
-    "Editar el uso de la swap\n"                                                    \
-    "Complementos basicos para el editor atom\n"                                    \
-    "Reutilizar tu clave ssh copiada en ~/.ssh\n"                                   \
-    "Eliminar paquetes ya no requeredos del sistema\n"                              \
-    "Configurar nombre,email y editor para git\n"                                   \
-    "Eliminar el bootsplash solo texto\n" 
-
-  read opcion                                          
-
-  case $opcion in
+# funcion que ejecuta las acciones
+execute_option(){
+  case $1 in
     "Actualizar" )
     echo $sudo_pass | sudo -S dnf upgrade -y --refresh
     echo $sudo_pass | sudo -S pip install --upgrade pip
@@ -239,7 +202,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
 
-    "Complementos ATOM" )
+    "ComplementosAtom" )
     exit
     if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
       echo instalare atom
@@ -249,7 +212,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
 
-    "Cargar SSH" )
+    "CargarSSH" )
     exit
     if [[ -e "~/.ssh/id_rsa" ]]; then
       echo cambiando permiso a tu llave
@@ -262,14 +225,14 @@ while [[ $opcion != "" ]]; do
 
 
 
-    "Paquetes Huerfanos" )
+    "PaquetesHuerfanos" )
     exit
     echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
     ;;
 
 
 
-    "Configurar git")
+    "Configurargit")
     echo "cual es tu nombre : "
     read nombre_git
     echo "cual es tu email  : "
@@ -295,7 +258,72 @@ while [[ $opcion != "" ]]; do
     echo $sudo_pass | sudo -S update-grub
     ;;
   esac
+}
+# fin de declaracion de funciones
 
-done
+opcion="basura :v"
+
+# instalamos todo aquello necesario
+if [[ ! $val_zsh ]]; then
+  aviso "Instalando zsh"
+  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "se ha instalado zsh"
+fi
+
+if [[ ! $val_oh_my_zsh ]]; then
+  aviso "Instalando zsh"
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "se ha instalado oh ny zsh" true
+fi
+
+if [[ ! $val_python ]]; then
+  aviso "Instalando python"
+  echo $sudo_pass | sudo -S dnf install python-pip -y
+  aviso "Python ahora esta instalado" true
+fi
+
+if [[ ! $val_pip ]]; then
+  aviso "Instalando Pyton PIP"
+  echo $sudo_pass | sudo -S dnf python-pip -y
+  aviso "Python PIP esta instalado" true
+fi
+
+if [[ ! $val_git ]]; then
+  aviso "Instalando git"
+  echo $sudo_pass | sudo -S dnf git gitflow -y
+  aviso "Git se ha instalado" true
+fi
+
+
+# pendiente
+if [[ ! $val_code ]]; then
+  aviso "Instalando vscode"
+  # echo $sudo_pass | sudo -S dnf python-pip -y
+  aviso "VsCode se ha instalado" true
+fi
+
+
+
+val_pip=$(pip -V)
+
+if [ $1 ]; then
+  # aca solo ejecutamos la opcion pasadap por argumento
+  echo "okoko"
+else
+  while [[ $opcion != "" ]]; do 
+    # imprimir opciones
+    for opcion_numero in ${!opciones_indices[@]}
+    do
+      echo $opcion_numero
+      echo ${opciones_indices[$opciones_numero]}
+      echo ${opciones_indices[1]}
+    done
+    read opcion                                        
+
+  done
+fi
+
+
 
 echo "saliendo del script"
