@@ -2,9 +2,7 @@
 : '
 * @author Marco A Gallegos
 * @date 2020-01-01
-* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora sin gui
-* consideramso que provee un argumento o no
-* siempre trabajamos sobre la distro mas nueva
+* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
 '
 #primer paso validar que sea fedora en version 30 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
@@ -17,20 +15,15 @@ read -ra version_arr <<< "$version_text"
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
 
-if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 31 ]]; then
+if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
   echo "no es una distro fedora soportada"
   exit
 else
   echo "distro soportada"
-  echo "sudo password : "
-  read -s sudo_pass
-  if [[ ! $sudo_pass ]]; then
-    exit
-  fi
 fi
 
 
-declare -A config # especificamos que config es un array, se puede recorrer 
+declare -A config # especificamos que config es un array
 config=(
   [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
   [ok]='nadamas'
@@ -49,31 +42,8 @@ config=(
   [repopath]='/etc/yum.repos.d/'
 )
 
-declare -A opciones
-# opciones para mostrar en el menu
-opciones=(
-  [Actualizar]="Actualizar el sistema (solo dnf)\n"
-  [Actualizar++]="Actualizacion agresiva (dnf con limpieza de cache, snap, flatpak, etc)\n"
-  [Migracion]="Respaldo Pre formateo de PC\n"
-  [Limpar]="Limpar la cache de DNF\n"
-  [Software]="Software basico\n"
-  [IDES]="IDE's y editores que uso para programar\n"
-  [Swappiness]="Editar el uso de la swap\n"
-  [ComplementosAtom]="Complementos basicos para el editor atom\n"
-  [CargarSSH]="Reutilizar tu clave ssh copiada en ~/.ssh\n"
-  [PaquetesHuerfanos]="Eliminar paquetes ya no requeredos del sistema\n"
-  [Configurargit]="Configurar nombre,email y editor para git\n"
-  [Bootsplash]="Eliminar el bootsplash solo texto\n" 
-)
-# vicular los indices con un numero para eleccion sencilla en menu
-declare -A opciones_indices
-index=0
-for valor in ${!opciones[@]}
-do
-  opciones_indices[$index]=$valor
-  index=`expr $index + 1`
-done
 
+# bug evitar reescribir los archivos.old
 # el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
 # este archivo almacena el valor swapiness editado por el usuario
@@ -86,6 +56,7 @@ user=$(whoami)
 val_enforce=$(getenforce)
 
 # aplicaciones que se deben instalar
+val_zenity=$(zenity --version)
 val_zsh=$(zsh --version)
 val_oh_my_zsh=$(echo $ZSH)
 val_python=$(python --version)
@@ -106,15 +77,94 @@ val_snap=$(snap --version)
 val_flatpak=$(flatpak --version)
 
 
-# funciones
+
 # auxiliar para mostrar tanto notificaciones push como logs
 aviso() {
   echo "$1"
+  if $2 ; then
+    zenity --notification --window-icon="info" --text="$1"
+  fi
 }
 
-# funcion que ejecuta las acciones
-execute_option(){
-  case $1 in
+opcion="basura :v"
+sudo_pass=$(zenity --password --title="contraseña sudo")
+# root_pass=$(zenity --password --title="contraseña root")
+if [[ ! $sudo_pass ]]; then
+  exit
+fi
+
+
+# instalamos todo aquello necesario
+if [[ ! $val_zenity ]]; then
+  aviso "Instalando zenity"
+  echo $sudo_pass | sudo -S dnf install zenity -y
+fi
+
+if [[ ! $val_zsh ]]; then
+  aviso "Instalando zsh"
+  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "se ha instalado zsh" true
+fi
+
+if [[ ! $val_oh_my_zsh ]]; then
+  aviso "Instalando zsh"
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "se ha instalado oh ny zsh" true
+fi
+
+if [[ ! $val_python ]]; then
+  aviso "Instalando python"
+  echo $sudo_pass | sudo -S dnf install python-pip -y
+  aviso "Python ahora esta instalado" true
+fi
+
+if [[ ! $val_pip ]]; then
+  aviso "Instalando Pyton PIP"
+  echo $sudo_pass | sudo -S dnf python-pip -y
+  aviso "Python PIP esta instalado" true
+fi
+
+if [[ ! $val_git ]]; then
+  aviso "Instalando git"
+  echo $sudo_pass | sudo -S dnf git gitflow -y
+  aviso "Git se ha instalado" true
+fi
+
+
+# pendiente
+if [[ ! $val_code ]]; then
+  aviso "Instalando vscode"
+  # echo $sudo_pass | sudo -S dnf python-pip -y
+  aviso "VsCode se ha instalado" true
+fi
+
+
+
+val_pip=$(pip -V)
+
+while [[ $opcion != "" && $val_zenity ]]; do
+  opcion=$(zenity --list\
+    --title="Post install on $host_name | $user SELinux $val_enforce"\
+    --radiolist\
+    --width="800"\
+    --height="500"\
+    --column="" --column="Opcion" --column="Descripcion" --column="Info"\
+    TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
+    FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
+    FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
+    FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
+    FALSE  "Software"            "Software basico "                                                            "-"\
+    FALSE  "IDES"                "IDE's y editores que uso para programar"                                     "-"\
+    FALSE  "Swappiness"          "Editar el uso de la swap"                                                    "$val_swappines"\
+    FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"                                    "${val_atom[0]}"\
+    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"                                   "-"\
+    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"                              "-"\
+    FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
+    FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"
+  )
+
+  case $opcion in
     "Actualizar" )
     echo $sudo_pass | sudo -S dnf upgrade -y --refresh
     echo $sudo_pass | sudo -S pip install --upgrade pip
@@ -202,7 +252,7 @@ execute_option(){
       ;;
 
 
-    "ComplementosAtom" )
+    "Complementos ATOM" )
     exit
     if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
       echo instalare atom
@@ -212,7 +262,7 @@ execute_option(){
       ;;
 
 
-    "CargarSSH" )
+    "Cargar SSH" )
     exit
     if [[ -e "~/.ssh/id_rsa" ]]; then
       echo cambiando permiso a tu llave
@@ -225,14 +275,14 @@ execute_option(){
 
 
 
-    "PaquetesHuerfanos" )
+    "Paquetes Huerfanos" )
     exit
     echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
     ;;
 
 
 
-    "Configurargit")
+    "Configurar git")
     echo "cual es tu nombre : "
     read nombre_git
     echo "cual es tu email  : "
@@ -258,72 +308,7 @@ execute_option(){
     echo $sudo_pass | sudo -S update-grub
     ;;
   esac
-}
-# fin de declaracion de funciones
 
-opcion="basura :v"
-
-# instalamos todo aquello necesario
-if [[ ! $val_zsh ]]; then
-  aviso "Instalando zsh"
-  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado zsh"
-fi
-
-if [[ ! $val_oh_my_zsh ]]; then
-  aviso "Instalando zsh"
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado oh ny zsh" true
-fi
-
-if [[ ! $val_python ]]; then
-  aviso "Instalando python"
-  echo $sudo_pass | sudo -S dnf install python-pip -y
-  aviso "Python ahora esta instalado" true
-fi
-
-if [[ ! $val_pip ]]; then
-  aviso "Instalando Pyton PIP"
-  echo $sudo_pass | sudo -S dnf python-pip -y
-  aviso "Python PIP esta instalado" true
-fi
-
-if [[ ! $val_git ]]; then
-  aviso "Instalando git"
-  echo $sudo_pass | sudo -S dnf git gitflow -y
-  aviso "Git se ha instalado" true
-fi
-
-
-# pendiente
-if [[ ! $val_code ]]; then
-  aviso "Instalando vscode"
-  # echo $sudo_pass | sudo -S dnf python-pip -y
-  aviso "VsCode se ha instalado" true
-fi
-
-
-
-val_pip=$(pip -V)
-
-if [ $1 ]; then
-  # aca solo ejecutamos la opcion pasadap por argumento
-  echo "okoko"
-else
-  while [[ $opcion != "" ]]; do 
-    # imprimir opciones
-    for opcion_numero in ${!opciones_indices[@]}
-    do
-      echo $opcion_numero
-      echo ${opciones_indices[$opciones_numero]}
-      echo ${opciones_indices[1]}
-    done
-    read opcion                                        
-
-  done
-fi
-
-
+done
 
 echo "saliendo del script"
