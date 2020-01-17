@@ -2,7 +2,7 @@
 : '
 * @author Marco A Gallegos
 * @date 2020-01-01
-* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
+* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora sin gui
 '
 #primer paso validar que sea fedora en version 30 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
@@ -56,7 +56,6 @@ user=$(whoami)
 val_enforce=$(getenforce)
 
 # aplicaciones que se deben instalar
-val_zenity=$(zenity --version)
 val_zsh=$(zsh --version)
 val_oh_my_zsh=$(echo $ZSH)
 val_python=$(python --version)
@@ -81,36 +80,34 @@ val_flatpak=$(flatpak --version)
 # auxiliar para mostrar tanto notificaciones push como logs
 aviso() {
   echo "$1"
-  if $2 ; then
-    zenity --notification --window-icon="info" --text="$1"
-  fi
 }
 
 opcion="basura :v"
-sudo_pass=$(zenity --password --title="contraseña sudo")
-# root_pass=$(zenity --password --title="contraseña root")
+echo "sudo password : "
+read -s sudo_pass
 if [[ ! $sudo_pass ]]; then
   exit
 fi
 
 
 # instalamos todo aquello necesario
-if [[ ! $val_zenity ]]; then
-  aviso "Instalando zenity"
-  echo $sudo_pass | sudo -S dnf install zenity -y
+if [[ ! $val_git ]]; then
+   aviso "Instalando git"
+   echo $sudo_pass | sudo -S dnf install git gitflow -y
+   aviso "Git se ha instalado" true
 fi
 
 if [[ ! $val_zsh ]]; then
   aviso "Instalando zsh"
-  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
+  echo $sudo_pass | sudo -S dnf install curl git zsh zsh-syntax-highlighting -y
   echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado zsh" true
+  aviso "se ha instalado zsh"
 fi
 
 if [[ ! $val_oh_my_zsh ]]; then
   aviso "Instalando zsh"
   echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado oh ny zsh" true
+  aviso "se ha instalado oh my zsh" true
 fi
 
 if [[ ! $val_python ]]; then
@@ -125,17 +122,19 @@ if [[ ! $val_pip ]]; then
   aviso "Python PIP esta instalado" true
 fi
 
-if [[ ! $val_git ]]; then
-  aviso "Instalando git"
-  echo $sudo_pass | sudo -S dnf git gitflow -y
-  aviso "Git se ha instalado" true
-fi
-
 
 # pendiente
 if [[ ! $val_code ]]; then
-  aviso "Instalando vscode"
-  # echo $sudo_pass | sudo -S dnf python-pip -y
+  echo $sudo_pass | sudo -S rpm --import https://packages.microsoft.com/keys/microsoft.asc
+  echo $sudo_pass | sudo -S touch /etc/yum.repos.d/vscode.repo
+  echo $sudo_pass | sudo -S echo "[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > vscode.repo
+  echo $sudo_pass | sudo -S mv vscode.repo /etc/yum.repos.d/vscode.repo
+  echo $sudo_pass | sudo -S dnf install code -y
   aviso "VsCode se ha instalado" true
 fi
 
@@ -143,26 +142,22 @@ fi
 
 val_pip=$(pip -V)
 
-while [[ $opcion != "" && $val_zenity ]]; do
-  opcion=$(zenity --list\
-    --title="Post install on $host_name | $user SELinux $val_enforce"\
-    --radiolist\
-    --width="800"\
-    --height="500"\
-    --column="" --column="Opcion" --column="Descripcion" --column="Info"\
-    TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
-    FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
-    FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
-    FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
-    FALSE  "Software"            "Software basico "                                                            "-"\
-    FALSE  "IDES"                "IDE's y editores que uso para programar"                                     "-"\
-    FALSE  "Swappiness"          "Editar el uso de la swap"                                                    "$val_swappines"\
-    FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"                                    "${val_atom[0]}"\
-    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"                                   "-"\
-    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"                              "-"\
-    FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
-    FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"
-  )
+while [[ $opcion != "" ]]; do
+    echo -e "Info \n"\
+    "Actualizar el sistema (solo dnf)\n"                                          \
+    "Actualizacion agresiva (dnf con limpieza de cache, snap, flatpak, etc)\n"    \
+    "Respaldo Pre formateo de PC\n"                                               \
+    "Limpar la cache de pacman\n"                                                 \
+    "Software basico\n"                                                            \
+    "IDE's y editores que uso para programar\n"                                     \
+    "Editar el uso de la swap\n"                                                    \
+    "Complementos basicos para el editor atom\n"                                    \
+    "Reutilizar tu clave ssh copiada en ~/.ssh\n"                                   \
+    "Eliminar paquetes ya no requeredos del sistema\n"                              \
+    "Configurar nombre,email y editor para git\n"                                   \
+    "Eliminar el bootsplash solo texto\n" 
+
+  read opcion                                          
 
   case $opcion in
     "Actualizar" )
