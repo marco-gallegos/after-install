@@ -70,9 +70,9 @@ val_pip=$(pip show pip-tools)
 val_pip=$(pip show spyder) # necesitas instalar libqtxdg
 
 # de aca para abajo pendiente de implementar
-val_codium=$(code --version)
+val_codium=$(codium --version)
 val_node=$(node --version)
-val_node=$(npm --version)
+val_npm=$(npm --version)
 val_php=$(php --version)
 val_composer=$(code --version)
 val_docker=$(docker --version)
@@ -134,6 +134,7 @@ if [[ ! $val_pip ]]; then
 fi
 
 if [[ ! $val_code ]]; then
+  # https://computingforgeeks.com/install-visual-studio-code-on-fedora/
   if [ -f "${config[repopath]}${config[vscodefilename]}" ];then
     echo $sudo_pass | sudo -S rm "${config[repopath]}${config[vscodefilename]}"
   fi
