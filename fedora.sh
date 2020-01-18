@@ -41,12 +41,6 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc'
   [repopath]='/etc/yum.repos.d/'
 )
 
-if [ -f "${config[repopath]}${config[vscodefilename]}" ];then
-  echo "existe"
-else
-  echo "no existe"
-fi
-
 # bug evitar reescribir los archivos.old
 # el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
@@ -129,7 +123,7 @@ fi
 
 if [[ ! $val_python ]]; then
   aviso "Instalando python"
-  echo $sudo_pass | sudo -S dnf install python-pip -y
+  echo $sudo_pass | sudo -S dnf install python -y
   aviso "Python ahora esta instalado" true
 fi
 
@@ -140,6 +134,9 @@ if [[ ! $val_pip ]]; then
 fi
 
 if [[ ! $val_code ]]; then
+  if [ -f "${config[repopath]}${config[vscodefilename]}" ];then
+    echo $sudo_pass | sudo -S rm "${config[repopath]}${config[vscodefilename]}"
+  fi
   echo $sudo_pass | sudo -S rpm --import ${config[vscoderepogpg]}
   echo $sudo_pass | sudo -S touch "${config[vscodefilename]}"
   echo $sudo_pass | sudo -S echo "${config[vscoderepo]}" > ${config[vscodefilename]}
@@ -149,15 +146,14 @@ if [[ ! $val_code ]]; then
 fi
 
 
-
 val_pip=$(pip -V)
 
-while [[ $opcion != "" && $val_zenity ]]; do
+while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
     --title="Post install on $host_name | $user SELinux $val_enforce"\
     --radiolist\
     --width="800"\
-    --height="500"\
+    --height="600"\
     --column="" --column="Opcion" --column="Descripcion" --column="Info"\
     TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
     FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
