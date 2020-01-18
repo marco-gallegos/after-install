@@ -82,6 +82,7 @@ val_flutter=$(flutter --version)
 
 # tiendas de software
 val_snap=$(snap --version)
+# pendiente
 val_flatpak=$(flatpak --version)
 
 
@@ -109,28 +110,33 @@ if [[ ! $val_git ]]; then
 fi
 
 if [[ ! $val_zsh ]]; then
-  aviso "Instalando zsh"
   echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
   echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
   aviso "se ha instalado zsh" true
 fi
 
 if [[ ! $val_oh_my_zsh ]]; then
-  aviso "Instalando zsh"
   echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
   aviso "se ha instalado oh ny zsh" true
 fi
 
 if [[ ! $val_python ]]; then
-  aviso "Instalando python"
   echo $sudo_pass | sudo -S dnf install python -y
   aviso "Python ahora esta instalado" true
 fi
 
 if [[ ! $val_pip ]]; then
-  aviso "Instalando Pyton PIP"
   echo $sudo_pass | sudo -S dnf python-pip -y
   aviso "Python PIP esta instalado" true
+fi
+
+if [[ ! $val_snap ]]; then
+  # https://snapcraft.io/docs/installing-snap-on-fedora
+  echo $sudo_pass | sudo -S dnf install snapd -y
+  echo $sudo_pass | sudo -S ln -s /var/lib/snapd/snap /snap
+  echo $sudo_pass | sudo -S systemctl enable snapd --now
+  echo $sudo_pass | sudo -S sed -i '$a export PATH=$PATH:/var/lib/snapd/snap/bin' /etc/profile
+  aviso "Se instalo Snap" true
 fi
 
 if [[ ! $val_code ]]; then
