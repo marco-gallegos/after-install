@@ -3,11 +3,8 @@
 * @author Marco A Gallegos
 * @date 2020-01-01
 * @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora sin gui
-<<<<<<< HEAD:fedora_old.sh
-=======
 * consideramso que provee un argumento o no
-* siempre trabajamos sobre la distro mas nueva
->>>>>>> 90bf6ab8dba3c1386169c47b8bcc204974fe274f:fedora_nox.sh
+* siempre trabajamos sobre la distro mas nueva0bf6ab8dba3c1386169c47b8bcc204974fe274f:fedora_nox.sh
 '
 #primer paso validar que sea fedora en version 30 o superior
 distro_text=$(grep "^NAME" /etc/os-release)

@@ -11,6 +11,8 @@ IFS='=' # space is set as delimiter
 read -ra distro_arr <<< "$distro_text" # distro_text is read into an array as tokens separated by IFS
 read -ra version_arr <<< "$version_text" 
 
+# instalar grupo Development Tools
+# instalar qt5-devel cmake 
 
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
@@ -26,22 +28,24 @@ fi
 declare -A config # especificamos que config es un array
 config=(
   [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
-  [ok]='nadamas'
 
-  [vscoderepo]='
-  [code]
-  name=Visual Studio Code
-  baseurl=https://packages.microsoft.com/yumrepos/vscode
-  enabled=1
-  gpgcheck=1
-  gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-  '
+  [vscoderepo]='[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc'
   [vscoderepogpg]='https://packages.microsoft.com/keys/microsoft.asc'
   [vscodefilename]='vscode.repo'
   
   [repopath]='/etc/yum.repos.d/'
 )
 
+if [ -f "${config[repopath]}${config[vscodefilename]}" ];then
+  echo "existe"
+else
+  echo "no existe"
+fi
 
 # bug evitar reescribir los archivos.old
 # el swapiness activo en el sistema
@@ -55,22 +59,32 @@ val_graciasudo="basura :v"
 user=$(whoami)
 val_enforce=$(getenforce)
 
+# librerias que se deben instalar
+val_pythondevel=$(rpm -qa | grep python3-devel)
+
 # aplicaciones que se deben instalar
-val_zenity=$(zenity --version)
 val_zsh=$(zsh --version)
 val_oh_my_zsh=$(echo $ZSH)
 val_python=$(python --version)
 val_pip=$(pip -V)
 val_git=$(git --version)
+val_code=$(code --version)
+
+# aplicaciones/librerias de python
+# pendiente
+val_pip=$(pip show pip-tools)
+val_pip=$(pip show spyder) # necesitas instalar libqtxdg
 
 # de aca para abajo pendiente de implementar
-val_code=$(code --version)
 val_codium=$(code --version)
 val_node=$(node --version)
 val_node=$(npm --version)
 val_php=$(php --version)
 val_composer=$(code --version)
 val_docker=$(docker --version)
+
+#sdks
+val_flutter=$(flutter --version)
 
 # tiendas de software
 val_snap=$(snap --version)
@@ -95,9 +109,9 @@ fi
 
 
 # instalamos todo aquello necesario
-if [[ ! $val_zenity ]]; then
-  aviso "Instalando zenity"
-  echo $sudo_pass | sudo -S dnf install zenity -y
+if [[ ! $val_git ]]; then
+   echo $sudo_pass | sudo -S dnf install git gitflow -y
+   aviso "Git se ha instalado" true
 fi
 
 if [[ ! $val_zsh ]]; then
@@ -125,17 +139,12 @@ if [[ ! $val_pip ]]; then
   aviso "Python PIP esta instalado" true
 fi
 
-if [[ ! $val_git ]]; then
-  aviso "Instalando git"
-  echo $sudo_pass | sudo -S dnf git gitflow -y
-  aviso "Git se ha instalado" true
-fi
-
-
-# pendiente
 if [[ ! $val_code ]]; then
-  aviso "Instalando vscode"
-  # echo $sudo_pass | sudo -S dnf python-pip -y
+  echo $sudo_pass | sudo -S rpm --import ${config[vscoderepogpg]}
+  echo $sudo_pass | sudo -S touch "${config[vscodefilename]}"
+  echo $sudo_pass | sudo -S echo "${config[vscoderepo]}" > ${config[vscodefilename]}
+  echo $sudo_pass | sudo -S mv ${config[vscodefilename]} "${config[repopath]}${config[vscodefilename]}"
+  echo $sudo_pass | sudo -S dnf install code -y
   aviso "VsCode se ha instalado" true
 fi
 
@@ -152,6 +161,7 @@ while [[ $opcion != "" && $val_zenity ]]; do
     --column="" --column="Opcion" --column="Descripcion" --column="Info"\
     TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
     FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
+    FALSE  "Pip Reqirements"     "Sincronizar pip reqirements"   "-"\
     FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
     FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
     FALSE  "Software"            "Software basico "                                                            "-"\
@@ -173,7 +183,7 @@ while [[ $opcion != "" && $val_zenity ]]; do
     "Actualizar++" )
     echo $sudo_pass | sudo -S dnf clean all && sudo -S dnf upgrade -y --refresh && sudo -S snap refresh 
     echo $sudo_pass | sudo flatpak update && sudo -S npm update -g && composer global update
-    sudo -S pip install --upgrade pip
+    echo $sudo_pass | sudo -S pip install --upgrade pip
     sh $ZSH/tools/upgrade.sh
       ;;
 
@@ -196,37 +206,17 @@ while [[ $opcion != "" && $val_zenity ]]; do
       ;;
 
     "Limpiar" )
-    sudo -S dnf clean all
+    echo $sudo_pass | sudo -S dnf clean all
       ;;
 
     "Software" )
     exit
-    echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc jdk9-openjdk jre9-openjdk
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-    echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
-    echo $sudo_pass | sudo -S pacman -S --noconfirm bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
-    echo $sudo_pass | sudo -S pacman -S --noconfirm unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
-    echo $sudo_pass | sudo -S pacman -S --noconfirm qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
-    echo $sudo_pass | sudo -S pacman -S --noconfirm openshot obs-studio htop lshw mysql-workbench plank thunderbird
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gimp remmina freeglut gedit gedit-plugins
-    echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
-    yaourt -S telegram-desktop-bin
-    yaourt -S jdownloader2
-    yaourt -S google-chrome
-    yaourt -S dbeaver-ce
-    yaourt -S matcha-gtk-theme
-    #spotify
-    gpg --keyserver hkps://pgp.mit.edu --recv-keys 0DF731E45CE24F27EEEB1450EFDC8610341D9410
-    yaourt -S spotify-stable multisystem sublime-text-dev
+    echo $sudo_pass | sudo 
       ;;
 
     "IDES" )
     exit
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git jdk9-openjdk jre9-openjdk
-    echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
-    echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
-    echo $sudo_pass | sudo -S pacman -S --noconfirm intellij-idea-community-edition
-    echo $sudo_pass | sudo -S pacman -S --noconfirm texlive-core texmaker
+    echo $sudo_pass | sudo -S dnf install 
       ;;
 
 
@@ -298,14 +288,6 @@ while [[ $opcion != "" && $val_zenity ]]; do
 
     "Bootsplash" )
     exit
-    if [[ -e "/etc/default/grub.old" ]]; then
-      echo ya tienes un archivo old de respaldo
-    else
-      echo creando respaldo .old
-      echo $sudo_pass | sudo -S cp /etc/default/grub /etc/default/grub.old
-    fi
-    echo $sudo_pass | sudo -S sed -i "s%${val_grubboot[0]}%GRUB_CMDLINE_LINUX_DEFAULT=\"\"%g" /etc/default/grub
-    echo $sudo_pass | sudo -S update-grub
     ;;
   esac
 
