@@ -2,10 +2,13 @@
 : '
 * @author Marco A Gallegos
 * @date 2020-01-01
-* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
+* @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 pendientes :
-phpmyadmin
 dbeaver
+laravel/installer
+laravel/lumen-installer
+
+@vue/cli
 '
 
 
@@ -29,6 +32,8 @@ if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_vers
 else
   echo "distro soportada"
 fi
+
+user=$(whoami)
 
 declare -A config # especificamos que config es un array
 config=(
@@ -56,6 +61,7 @@ gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
   [rpmsusionnonurl]="https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora_version_rpm.noarch.rpm"
   [repopath]='/etc/yum.repos.d/'
   [rpmqafile]='rpmqa.txt'
+  [composerbinpath]="export PATH=\$PATH:/home/$user/.config/composer/vendor/bin"
 )
 
 sudo_pass=$(zenity --password --title="contraseña sudo")
@@ -77,7 +83,6 @@ val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
-user=$(whoami)
 val_enforce=$(getenforce)
 
 # librerias que se deben instalar
@@ -93,6 +98,10 @@ val_code=$(code --version)
 val_rmpfusion_free=$(grep "rpmfusion-free-release" ${config[rpmqafile]})
 val_rmpfusion_nonfree=$(grep "rpmfusion-nonfree-release" ${config[rpmqafile]})
 val_php=$(php --version)
+val_codium=$(codium --version)
+val_composer=$(composer --version)
+val_node=$(node --version)
+val_npm=$(npm --version)
 
 # aplicaciones/librerias de python
 # pendiente
@@ -100,14 +109,11 @@ val_pip=$(pip show pip-tools)
 val_pip=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
-val_codium=$(codium --version)
 # de aca para abajo pendiente de implementar
-val_node=$(node --version)
-val_npm=$(npm --version)
-val_composer=$(code --version)
 val_docker=$(docker --version)
 
 #sdks
+# pendiente
 val_flutter=$(flutter --version)
 
 # tiendas de software
@@ -122,7 +128,6 @@ aviso() {
     zenity --notification --window-icon="info" --text="$1"
   fi
 }
-
 
 # instalamos todo aquello necesario
 if [[ ! $val_git ]]; then
@@ -207,6 +212,22 @@ if [[ ! $val_codium ]]; then
   aviso "Vs Codium se ha instalado" true
 fi
 
+if [[ ! $val_composer ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf -y install composer
+  existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
+  if [[ ! $existe_path ]]; then
+    echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
+  fi
+  source /etc/profile
+  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+fi
+
+if [[ ! $val_node || ! $val_npm ]]; then
+  echo $sudo_pass | sudo -S dnf -y install nodejs npm
+  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+fi
+
 if [ -f "${config[rpmqafile]}" ];then
   echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
 fi
@@ -218,7 +239,7 @@ while [[ $opcion != "" ]]; do
     --title="Post install on $host_name | $user SELinux $val_enforce"\
     --radiolist\
     --width="800"\
-    --height="600"\
+    --height="590"\
     --column="" --column="Opcion" --column="Descripcion" --column="Info"\
     TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
     FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
