@@ -88,9 +88,7 @@ val_flutter=$(flutter --version)
 
 # tiendas de software
 val_snap=$(snap --version)
-# pendiente
 val_flatpak=$(flatpak --version)
-
 
 
 # auxiliar para mostrar tanto notificaciones push como logs
@@ -138,6 +136,12 @@ if [[ ! $val_snap ]]; then
   echo $sudo_pass | sudo -S systemctl enable snapd --now
   echo $sudo_pass | sudo -S sed -i '$a export PATH=$PATH:/var/lib/snapd/snap/bin' /etc/profile
   aviso "Se instalo Snap" true
+fi
+
+if [[ ! $val_flatpak ]]; then
+  # https://developer.fedoraproject.org/deployment/flatpak/flatpak-install.html
+  echo $sudo_pass | sudo -S dnf install flatpak -y
+  aviso "Flatpak se instalo" true
 fi
 
 if [[ ! $val_code ]]; then
@@ -225,8 +229,8 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Software" )
-    exit
-    echo $sudo_pass | sudo 
+    echo $sudo_pass | sudo -S dnf install -y stacer vlc
+    bash -c "$(wget -q -O - https://linux.kite.com/dls/linux/current)"
       ;;
 
     "IDES" )
