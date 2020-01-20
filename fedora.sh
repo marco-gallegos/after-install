@@ -16,6 +16,7 @@ read -ra version_arr <<< "$version_text"
 
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
+fedora_version_rpm=$(rpm -E %fedora)
 
 if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
   echo "no es una distro fedora soportada"
@@ -38,6 +39,8 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc'
   [vscoderepogpg]='https://packages.microsoft.com/keys/microsoft.asc'
   [vscodefilename]='vscode.repo'
   
+  [rpmsusiofreeurl]="https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora_version_rpm.noarch.rpm"
+  [rpmsusionnonurl]="https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora_version_rpm.noarch.rpm"
   [repopath]='/etc/yum.repos.d/'
 )
 
@@ -69,11 +72,14 @@ val_code=$(code --version)
 val_pip=$(pip show pip-tools)
 val_pip=$(pip show spyder) # necesitas instalar libqtxdg
 
+# probando
+val_rmpfusion_free=$(rpm -qa | grep rpmfusion-free-release)
+val_rmpfusion_nonfree=$(rpm -qa | grep rpmfusion-nonfree-release)
+val_php=$(php --version)
 # de aca para abajo pendiente de implementar
 val_codium=$(codium --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
-val_php=$(php --version)
 val_composer=$(code --version)
 val_docker=$(docker --version)
 
@@ -120,14 +126,9 @@ if [[ ! $val_oh_my_zsh ]]; then
   aviso "se ha instalado oh my zsh" true
 fi
 
-if [[ ! $val_python ]]; then
-  echo $sudo_pass | sudo -S dnf install python -y
-  aviso "Python ahora esta instalado" true
-fi
-
-if [[ ! $val_pip ]]; then
+if [[ ! $val_pip || ! $val_python ]]; then
   echo $sudo_pass | sudo -S dnf python-pip -y
-  aviso "Python PIP esta instalado" true
+  aviso "Python y/o PIP esta instalado" true
 fi
 
 if [[ ! $val_snap ]]; then
@@ -152,8 +153,19 @@ if [[ ! $val_code ]]; then
   aviso "VsCode se ha instalado" true
 fi
 
+if [[ ! $val_rmpfusion_free ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf install ${config[rpmsusiofreeurl]} -y
+  echo $sudo_pass | sudo -S dnf check-update
+  aviso "RPM Fusion Free se ha instalado" true
+fi
 
-val_pip=$(pip -V)
+if [[ ! $val_rmpfusion_nonfree ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf install ${config[rpmsusionnonurl]} -y
+  echo $sudo_pass | sudo -S dnf check-update
+  aviso "RPM Fusion Nonfree se ha instalado" true
+fi
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
