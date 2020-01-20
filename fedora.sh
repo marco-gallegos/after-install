@@ -9,6 +9,7 @@ laravel/installer
 laravel/lumen-installer
 
 @vue/cli
+deno
 '
 
 
@@ -57,6 +58,8 @@ repo_gpgcheck=1
 gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
   [vscodiumfilename]='vscodium.repo'
 
+  [flutterurl]='https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.12.13+hotfix.5-stable.tar.xz'
+
   [rpmsusiofreeurl]="https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora_version_rpm.noarch.rpm"
   [rpmsusionnonurl]="https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora_version_rpm.noarch.rpm"
   [repopath]='/etc/yum.repos.d/'
@@ -102,6 +105,7 @@ val_codium=$(codium --version)
 val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
+val_grubby=$(grubby --help)
 
 # aplicaciones/librerias de python
 # pendiente
@@ -109,8 +113,8 @@ val_pip=$(pip show pip-tools)
 val_pip=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
-# de aca para abajo pendiente de implementar
 val_docker=$(docker --version)
+# pendiente
 
 #sdks
 # pendiente
@@ -225,12 +229,39 @@ fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
   echo $sudo_pass | sudo -S dnf -y install nodejs npm
-  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+  aviso "NodeJs/npm se ha instalado" true
+fi
+
+if [[ ! $val_grubby ]];then
+  echo $sudo_pass | sudo -S dnf install -y grubby
+  aviso "Grubby se ha instalado" true
+fi
+
+# se ejecuta correctamente pendiente testear
+if [[ ! $val_docker && $val_grubby ]];then
+  # https://linuxconfig.org/how-to-install-docker-on-fedora-31
+  echo $sudo_pass | sudo -S grubby --update-kernel=ALL --args='systemd.unified_cgroup_hierarchy=0'
+  echo $sudo_pass | sudo -S dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo
+  echo $sudo_pass | sudo -S dnf install -y docker-ce
+  echo $sudo_pass | sudo -S systemctl enable --now docker
+  echo $sudo_pass | sudo -S groupadd docker
+  echo $sudo_pass | sudo -S usermod -aG docker "$user"
+  val_grubby=$(grubby --help)
+  aviso "Docker se ha instalado para usarlo reinicia el equipo" true
+fi
+
+if [[ ! $val_flutter ]];then
+  # https://flutter.dev/docs/get-started/install/linux
+  # se debe instalar en /opt/flutter por convencion
+  # echo $sudo_pass | sudo -S 
+  #aviso "Flutter se ha instalado para usarlo reinicia el equipo" true
 fi
 
 if [ -f "${config[rpmqafile]}" ];then
   echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
 fi
+
+
 
 opcion="basura :v"
 
