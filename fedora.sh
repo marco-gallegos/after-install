@@ -43,6 +43,15 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc'
   [vscoderepogpg]='https://packages.microsoft.com/keys/microsoft.asc'
   [vscodefilename]='vscode.repo'
   
+  [vscodiumrepo]='[codium]
+name=Vs Codium
+baseurl=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/repos/rpms/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
+  [vscodiumfilename]='vscodium.repo'
+
   [rpmsusiofreeurl]="https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora_version_rpm.noarch.rpm"
   [rpmsusionnonurl]="https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora_version_rpm.noarch.rpm"
   [repopath]='/etc/yum.repos.d/'
@@ -182,6 +191,19 @@ if [[ ! $val_php ]]; then
   # https://rpmfusion.org/Configuration
   echo $sudo_pass | sudo -S dnf -y install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
   aviso "PHP se ha instalado" true
+fi
+
+if [[ ! $val_codium ]]; then
+  # https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo
+  if [ -f "${config[repopath]}${config[vscodiumfilename]}" ];then
+    echo $sudo_pass | sudo -S rm "${config[repopath]}${config[vscodiumfilename]}"
+  fi
+  # echo $sudo_pass | sudo -S rpm --import ${config[vscoderepogpg]}
+  echo $sudo_pass | sudo -S touch "${config[vscodiumfilename]}"
+  echo $sudo_pass | sudo -S echo "${config[vscodiumrepo]}" > ${config[vscodiumfilename]}
+  echo $sudo_pass | sudo -S mv ${config[vscodiumfilename]} "${config[repopath]}${config[vscodiumfilename]}"
+  echo $sudo_pass | sudo -S dnf install codium -y
+  aviso "Vs Codium se ha instalado" true
 fi
 
 while [[ $opcion != "" ]]; do
