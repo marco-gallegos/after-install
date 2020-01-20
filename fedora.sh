@@ -2,18 +2,30 @@
 : '
 * @author Marco A Gallegos
 * @date 2020-01-01
-* @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
+* @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
+pendientes :
+dbeaver
+laravel/installer
+laravel/lumen-installer
+
+@vue/cli
+deno
 '
+
+
 #primer paso validar que sea fedora en version 30 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
 version_text=$(grep "^VERSION_ID" /etc/os-release)
 IFS='=' # space is set as delimiter
 read -ra distro_arr <<< "$distro_text" # distro_text is read into an array as tokens separated by IFS
-read -ra version_arr <<< "$version_text" 
+read -ra version_arr <<< "$version_text"
 
+# instalar grupo Development Tools
+# instalar qt5-devel cmake 
 
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
+fedora_version_rpm=$(rpm -E %fedora)
 
 if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
   echo "no es una distro fedora soportada"
@@ -22,28 +34,50 @@ else
   echo "distro soportada"
 fi
 
+user=$(whoami)
 
 declare -A config # especificamos que config es un array
 config=(
   [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
-  [ok]='nadamas'
 
-  [vscoderepo]='
-  [code]
-  name=Visual Studio Code
-  baseurl=https://packages.microsoft.com/yumrepos/vscode
-  enabled=1
-  gpgcheck=1
-  gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-  '
+  [vscoderepo]='[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc'
   [vscoderepogpg]='https://packages.microsoft.com/keys/microsoft.asc'
   [vscodefilename]='vscode.repo'
   
+  [vscodiumrepo]='[codium]
+name=Vs Codium
+baseurl=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/repos/rpms/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
+  [vscodiumfilename]='vscodium.repo'
+
+  [flutterurl]='https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.12.13+hotfix.5-stable.tar.xz'
+
+  [rpmsusiofreeurl]="https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora_version_rpm.noarch.rpm"
+  [rpmsusionnonurl]="https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora_version_rpm.noarch.rpm"
   [repopath]='/etc/yum.repos.d/'
+  [rpmqafile]='rpmqa.txt'
+  [composerbinpath]="export PATH=\$PATH:/home/$user/.config/composer/vendor/bin"
 )
 
+sudo_pass=$(zenity --password --title="contraseña sudo")
+if [[ ! $sudo_pass ]]; then
+  exit
+fi
 
-# bug evitar reescribir los archivos.old
+# solo ejecutamos rpm -qa 1 vez por que es lento lo mandamos a un archivo y luego solo hacemos grep a este
+if [ -f "${config[rpmqafile]}" ];then
+  echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
+fi
+rpm -qa > "${config[rpmqafile]}"
+
 # el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
 # este archivo almacena el valor swapiness editado por el usuario
@@ -52,30 +86,43 @@ val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
 host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
-user=$(whoami)
 val_enforce=$(getenforce)
 
-# aplicaciones que se deben instalar
-val_zenity=$(zenity --version)
+# librerias que se deben instalar
+val_pythondevel=$(grep "python3-devel" ${config[rpmqafile]})
+
+# aplicaciones/etc que se deben instalar
 val_zsh=$(zsh --version)
 val_oh_my_zsh=$(echo $ZSH)
 val_python=$(python --version)
 val_pip=$(pip -V)
 val_git=$(git --version)
-
-# de aca para abajo pendiente de implementar
 val_code=$(code --version)
-val_codium=$(code --version)
-val_node=$(node --version)
-val_node=$(npm --version)
+val_rmpfusion_free=$(grep "rpmfusion-free-release" ${config[rpmqafile]})
+val_rmpfusion_nonfree=$(grep "rpmfusion-nonfree-release" ${config[rpmqafile]})
 val_php=$(php --version)
-val_composer=$(code --version)
+val_codium=$(codium --version)
+val_composer=$(composer --version)
+val_node=$(node --version)
+val_npm=$(npm --version)
+val_grubby=$(grubby --help)
+
+# aplicaciones/librerias de python
+# pendiente
+val_pip=$(pip show pip-tools)
+val_pip=$(pip show spyder) # necesitas instalar libqtxdg
+
+# probando
 val_docker=$(docker --version)
+# pendiente
+
+#sdks
+# pendiente
+val_flutter=$(flutter --version)
 
 # tiendas de software
 val_snap=$(snap --version)
 val_flatpak=$(flatpak --version)
-
 
 
 # auxiliar para mostrar tanto notificaciones push como logs
@@ -86,72 +133,148 @@ aviso() {
   fi
 }
 
-opcion="basura :v"
-sudo_pass=$(zenity --password --title="contraseña sudo")
-# root_pass=$(zenity --password --title="contraseña root")
-if [[ ! $sudo_pass ]]; then
-  exit
-fi
-
-
 # instalamos todo aquello necesario
-if [[ ! $val_zenity ]]; then
-  aviso "Instalando zenity"
-  echo $sudo_pass | sudo -S dnf install zenity -y
+if [[ ! $val_git ]]; then
+  echo $sudo_pass | sudo -S dnf install git gitflow -y
+  aviso "Git se ha instalado" true
 fi
 
 if [[ ! $val_zsh ]]; then
-  aviso "Instalando zsh"
   echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
   aviso "se ha instalado zsh" true
 fi
 
 if [[ ! $val_oh_my_zsh ]]; then
-  aviso "Instalando zsh"
   echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado oh ny zsh" true
+  aviso "se ha instalado oh my zsh" true
 fi
 
-if [[ ! $val_python ]]; then
-  aviso "Instalando python"
-  echo $sudo_pass | sudo -S dnf install python-pip -y
-  aviso "Python ahora esta instalado" true
-fi
-
-if [[ ! $val_pip ]]; then
-  aviso "Instalando Pyton PIP"
+if [[ ! $val_pip || ! $val_python ]]; then
   echo $sudo_pass | sudo -S dnf python-pip -y
-  aviso "Python PIP esta instalado" true
+  aviso "Python y/o PIP esta instalado" true
 fi
 
-if [[ ! $val_git ]]; then
-  aviso "Instalando git"
-  echo $sudo_pass | sudo -S dnf git gitflow -y
-  aviso "Git se ha instalado" true
+if [[ ! $val_snap ]]; then
+  # https://snapcraft.io/docs/installing-snap-on-fedora
+  echo $sudo_pass | sudo -S dnf install snapd -y
+  echo $sudo_pass | sudo -S ln -s /var/lib/snapd/snap /snap
+  echo $sudo_pass | sudo -S systemctl enable snapd --now
+  echo $sudo_pass | sudo -S sed -i '$a export PATH=$PATH:/var/lib/snapd/snap/bin' /etc/profile
+  aviso "Se instalo Snap" true
 fi
 
+if [[ ! $val_flatpak ]]; then
+  # https://developer.fedoraproject.org/deployment/flatpak/flatpak-install.html
+  echo $sudo_pass | sudo -S dnf install flatpak -y
+  aviso "Flatpak se instalo" true
+fi
 
-# pendiente
 if [[ ! $val_code ]]; then
-  aviso "Instalando vscode"
-  # echo $sudo_pass | sudo -S dnf python-pip -y
+  # https://computingforgeeks.com/install-visual-studio-code-on-fedora/
+  if [ -f "${config[repopath]}${config[vscodefilename]}" ];then
+    echo $sudo_pass | sudo -S rm "${config[repopath]}${config[vscodefilename]}"
+  fi
+  echo $sudo_pass | sudo -S rpm --import ${config[vscoderepogpg]}
+  echo $sudo_pass | sudo -S touch "${config[vscodefilename]}"
+  echo $sudo_pass | sudo -S echo "${config[vscoderepo]}" > ${config[vscodefilename]}
+  echo $sudo_pass | sudo -S mv ${config[vscodefilename]} "${config[repopath]}${config[vscodefilename]}"
+  echo $sudo_pass | sudo -S dnf install code -y
   aviso "VsCode se ha instalado" true
 fi
 
+if [[ ! $val_rmpfusion_free ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf install ${config[rpmsusiofreeurl]} -y
+  echo $sudo_pass | sudo -S dnf check-update
+  aviso "RPM Fusion Free se ha instalado" true
+fi
+
+if [[ ! $val_rmpfusion_nonfree ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf install ${config[rpmsusionnonurl]} -y
+  echo $sudo_pass | sudo -S dnf check-update
+  aviso "RPM Fusion Nonfree se ha instalado" true
+fi
+
+if [[ ! $val_php ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf -y install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
+  aviso "PHP se ha instalado" true
+fi
+
+if [[ ! $val_codium ]]; then
+  # https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo
+  if [ -f "${config[repopath]}${config[vscodiumfilename]}" ];then
+    echo $sudo_pass | sudo -S rm "${config[repopath]}${config[vscodiumfilename]}"
+  fi
+  # echo $sudo_pass | sudo -S rpm --import ${config[vscoderepogpg]}
+  echo $sudo_pass | sudo -S touch "${config[vscodiumfilename]}"
+  echo $sudo_pass | sudo -S echo "${config[vscodiumrepo]}" > ${config[vscodiumfilename]}
+  echo $sudo_pass | sudo -S mv ${config[vscodiumfilename]} "${config[repopath]}${config[vscodiumfilename]}"
+  echo $sudo_pass | sudo -S dnf install codium -y
+  aviso "Vs Codium se ha instalado" true
+fi
+
+if [[ ! $val_composer ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf -y install composer
+  existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
+  if [[ ! $existe_path ]]; then
+    echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
+  fi
+  source /etc/profile
+  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+fi
+
+if [[ ! $val_node || ! $val_npm ]]; then
+  echo $sudo_pass | sudo -S dnf -y install nodejs npm
+  aviso "NodeJs/npm se ha instalado" true
+fi
+
+if [[ ! $val_grubby ]];then
+  echo $sudo_pass | sudo -S dnf install -y grubby
+  aviso "Grubby se ha instalado" true
+fi
+
+# se ejecuta correctamente pendiente testear
+if [[ ! $val_docker && $val_grubby ]];then
+  # https://linuxconfig.org/how-to-install-docker-on-fedora-31
+  echo $sudo_pass | sudo -S grubby --update-kernel=ALL --args='systemd.unified_cgroup_hierarchy=0'
+  echo $sudo_pass | sudo -S dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo
+  echo $sudo_pass | sudo -S dnf install -y docker-ce
+  echo $sudo_pass | sudo -S systemctl enable --now docker
+  echo $sudo_pass | sudo -S groupadd docker
+  echo $sudo_pass | sudo -S usermod -aG docker "$user"
+  val_grubby=$(grubby --help)
+  aviso "Docker se ha instalado para usarlo reinicia el equipo" true
+fi
+
+if [[ ! $val_flutter ]];then
+  # https://flutter.dev/docs/get-started/install/linux
+  # se debe instalar en /opt/flutter por convencion
+  # echo $sudo_pass | sudo -S 
+  #aviso "Flutter se ha instalado para usarlo reinicia el equipo" true
+fi
+
+if [ -f "${config[rpmqafile]}" ];then
+  echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
+fi
 
 
-val_pip=$(pip -V)
 
-while [[ $opcion != "" && $val_zenity ]]; do
+opcion="basura :v"
+
+while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
     --title="Post install on $host_name | $user SELinux $val_enforce"\
     --radiolist\
     --width="800"\
-    --height="500"\
+    --height="590"\
     --column="" --column="Opcion" --column="Descripcion" --column="Info"\
     TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)"                                            "-"\
     FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, snap, flatpak, etc)"   "-"\
+    FALSE  "Pip Reqirements"     "Sincronizar pip reqirements"   "-"\
     FALSE  "Migracion"           "Respaldo Pre formateo de PC"                                                 "-"\
     FALSE  "Limpiar"             "Limpar la cache de pacman"                                                   "-"\
     FALSE  "Software"            "Software basico "                                                            "-"\
@@ -173,7 +296,7 @@ while [[ $opcion != "" && $val_zenity ]]; do
     "Actualizar++" )
     echo $sudo_pass | sudo -S dnf clean all && sudo -S dnf upgrade -y --refresh && sudo -S snap refresh 
     echo $sudo_pass | sudo flatpak update && sudo -S npm update -g && composer global update
-    sudo -S pip install --upgrade pip
+    echo $sudo_pass | sudo -S pip install --upgrade pip
     sh $ZSH/tools/upgrade.sh
       ;;
 
@@ -196,37 +319,17 @@ while [[ $opcion != "" && $val_zenity ]]; do
       ;;
 
     "Limpiar" )
-    sudo -S dnf clean all
+    echo $sudo_pass | sudo -S dnf clean all
       ;;
 
     "Software" )
-    exit
-    echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc jdk9-openjdk jre9-openjdk
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-    echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
-    echo $sudo_pass | sudo -S pacman -S --noconfirm bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
-    echo $sudo_pass | sudo -S pacman -S --noconfirm unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
-    echo $sudo_pass | sudo -S pacman -S --noconfirm qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
-    echo $sudo_pass | sudo -S pacman -S --noconfirm openshot obs-studio htop lshw mysql-workbench plank thunderbird
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gimp remmina freeglut gedit gedit-plugins
-    echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
-    yaourt -S telegram-desktop-bin
-    yaourt -S jdownloader2
-    yaourt -S google-chrome
-    yaourt -S dbeaver-ce
-    yaourt -S matcha-gtk-theme
-    #spotify
-    gpg --keyserver hkps://pgp.mit.edu --recv-keys 0DF731E45CE24F27EEEB1450EFDC8610341D9410
-    yaourt -S spotify-stable multisystem sublime-text-dev
+    echo $sudo_pass | sudo -S dnf install -y stacer vlc
+    bash -c "$(wget -q -O - https://linux.kite.com/dls/linux/current)"
       ;;
 
     "IDES" )
     exit
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git jdk9-openjdk jre9-openjdk
-    echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
-    echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
-    echo $sudo_pass | sudo -S pacman -S --noconfirm intellij-idea-community-edition
-    echo $sudo_pass | sudo -S pacman -S --noconfirm texlive-core texmaker
+    echo $sudo_pass | sudo -S dnf install 
       ;;
 
 
@@ -298,14 +401,6 @@ while [[ $opcion != "" && $val_zenity ]]; do
 
     "Bootsplash" )
     exit
-    if [[ -e "/etc/default/grub.old" ]]; then
-      echo ya tienes un archivo old de respaldo
-    else
-      echo creando respaldo .old
-      echo $sudo_pass | sudo -S cp /etc/default/grub /etc/default/grub.old
-    fi
-    echo $sudo_pass | sudo -S sed -i "s%${val_grubboot[0]}%GRUB_CMDLINE_LINUX_DEFAULT=\"\"%g" /etc/default/grub
-    echo $sudo_pass | sudo -S update-grub
     ;;
   esac
 
