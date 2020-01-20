@@ -105,19 +105,19 @@ fi
 
 # instalamos todo aquello necesario
 if [[ ! $val_git ]]; then
-   echo $sudo_pass | sudo -S dnf install git gitflow -y
-   aviso "Git se ha instalado" true
+  echo $sudo_pass | sudo -S dnf install git gitflow -y
+  aviso "Git se ha instalado" true
 fi
 
 if [[ ! $val_zsh ]]; then
   echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
   aviso "se ha instalado zsh" true
 fi
 
 if [[ ! $val_oh_my_zsh ]]; then
   echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado oh ny zsh" true
+  aviso "se ha instalado oh my zsh" true
 fi
 
 if [[ ! $val_python ]]; then
