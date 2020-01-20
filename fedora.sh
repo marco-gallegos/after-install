@@ -3,13 +3,18 @@
 * @author Marco A Gallegos
 * @date 2020-01-01
 * @descripcion proveer opciones comunes para aligerar la instalacion o migracion de sistema operativo en este caso fedora
+pendientes :
+phpmyadmin
+dbeaver
 '
+
+
 #primer paso validar que sea fedora en version 30 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
 version_text=$(grep "^VERSION_ID" /etc/os-release)
 IFS='=' # space is set as delimiter
 read -ra distro_arr <<< "$distro_text" # distro_text is read into an array as tokens separated by IFS
-read -ra version_arr <<< "$version_text" 
+read -ra version_arr <<< "$version_text"
 
 # instalar grupo Development Tools
 # instalar qt5-devel cmake 
@@ -24,7 +29,6 @@ if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_vers
 else
   echo "distro soportada"
 fi
-
 
 declare -A config # especificamos que config es un array
 config=(
@@ -57,15 +61,21 @@ user=$(whoami)
 val_enforce=$(getenforce)
 
 # librerias que se deben instalar
+# ! es lento hacer esto
 val_pythondevel=$(rpm -qa | grep python3-devel)
 
-# aplicaciones que se deben instalar
+# aplicaciones/etc que se deben instalar
 val_zsh=$(zsh --version)
 val_oh_my_zsh=$(echo $ZSH)
 val_python=$(python --version)
 val_pip=$(pip -V)
 val_git=$(git --version)
 val_code=$(code --version)
+# ! es lento hacer esto
+val_rmpfusion_free=$(rpm -qa | grep rpmfusion-free-release)
+# ! es lento hacer esto
+val_rmpfusion_nonfree=$(rpm -qa | grep rpmfusion-nonfree-release)
+val_php=$(php --version)
 
 # aplicaciones/librerias de python
 # pendiente
@@ -73,11 +83,8 @@ val_pip=$(pip show pip-tools)
 val_pip=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
-val_rmpfusion_free=$(rpm -qa | grep rpmfusion-free-release)
-val_rmpfusion_nonfree=$(rpm -qa | grep rpmfusion-nonfree-release)
-val_php=$(php --version)
-# de aca para abajo pendiente de implementar
 val_codium=$(codium --version)
+# de aca para abajo pendiente de implementar
 val_node=$(node --version)
 val_npm=$(npm --version)
 val_composer=$(code --version)
@@ -169,6 +176,12 @@ if [[ ! $val_rmpfusion_nonfree ]]; then
   echo $sudo_pass | sudo -S dnf install ${config[rpmsusionnonurl]} -y
   echo $sudo_pass | sudo -S dnf check-update
   aviso "RPM Fusion Nonfree se ha instalado" true
+fi
+
+if [[ ! $val_php ]]; then
+  # https://rpmfusion.org/Configuration
+  echo $sudo_pass | sudo -S dnf -y install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
+  aviso "PHP se ha instalado" true
 fi
 
 while [[ $opcion != "" ]]; do
