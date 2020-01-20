@@ -55,9 +55,20 @@ gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
   [rpmsusiofreeurl]="https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$fedora_version_rpm.noarch.rpm"
   [rpmsusionnonurl]="https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$fedora_version_rpm.noarch.rpm"
   [repopath]='/etc/yum.repos.d/'
+  [rpmqafile]='rpmqa.txt'
 )
 
-# bug evitar reescribir los archivos.old
+sudo_pass=$(zenity --password --title="contraseña sudo")
+if [[ ! $sudo_pass ]]; then
+  exit
+fi
+
+# solo ejecutamos rpm -qa 1 vez por que es lento lo mandamos a un archivo y luego solo hacemos grep a este
+if [ -f "${config[rpmqafile]}" ];then
+  echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
+fi
+rpm -qa > "${config[rpmqafile]}"
+
 # el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
 # este archivo almacena el valor swapiness editado por el usuario
@@ -70,8 +81,7 @@ user=$(whoami)
 val_enforce=$(getenforce)
 
 # librerias que se deben instalar
-# ! es lento hacer esto
-val_pythondevel=$(rpm -qa | grep python3-devel)
+val_pythondevel=$(grep "python3-devel" ${config[rpmqafile]})
 
 # aplicaciones/etc que se deben instalar
 val_zsh=$(zsh --version)
@@ -80,10 +90,8 @@ val_python=$(python --version)
 val_pip=$(pip -V)
 val_git=$(git --version)
 val_code=$(code --version)
-# ! es lento hacer esto
-val_rmpfusion_free=$(rpm -qa | grep rpmfusion-free-release)
-# ! es lento hacer esto
-val_rmpfusion_nonfree=$(rpm -qa | grep rpmfusion-nonfree-release)
+val_rmpfusion_free=$(grep "rpmfusion-free-release" ${config[rpmqafile]})
+val_rmpfusion_nonfree=$(grep "rpmfusion-nonfree-release" ${config[rpmqafile]})
 val_php=$(php --version)
 
 # aplicaciones/librerias de python
@@ -114,13 +122,6 @@ aviso() {
     zenity --notification --window-icon="info" --text="$1"
   fi
 }
-
-opcion="basura :v"
-sudo_pass=$(zenity --password --title="contraseña sudo")
-# root_pass=$(zenity --password --title="contraseña root")
-if [[ ! $sudo_pass ]]; then
-  exit
-fi
 
 
 # instalamos todo aquello necesario
@@ -205,6 +206,12 @@ if [[ ! $val_codium ]]; then
   echo $sudo_pass | sudo -S dnf install codium -y
   aviso "Vs Codium se ha instalado" true
 fi
+
+if [ -f "${config[rpmqafile]}" ];then
+  echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
+fi
+
+opcion="basura :v"
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
