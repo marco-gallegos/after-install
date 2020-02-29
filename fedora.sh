@@ -10,6 +10,9 @@ laravel/lumen-installer
 
 @vue/cli
 deno
+
+sublime extensions
+All Autocomplete
 '
 
 
@@ -26,6 +29,7 @@ read -ra version_arr <<< "$version_text"
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
 fedora_version_rpm=$(rpm -E %fedora)
+desktop_envirenment=$DESKTOP_SESSION # variable de entorno
 
 if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
   echo "no es una distro fedora soportada"
@@ -254,20 +258,19 @@ if [[ ! $val_flutter ]];then
   # https://flutter.dev/docs/get-started/install/linux
   # se debe instalar en /opt/flutter por convencion
   # echo $sudo_pass | sudo -S 
-  #aviso "Flutter se ha instalado para usarlo reinicia el equipo" true
+  aviso "Flutter se ha instalado para usarlo reinicia el equipo" true
 fi
 
+# eliminamos el archivo
 if [ -f "${config[rpmqafile]}" ];then
   echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
 fi
-
-
 
 opcion="basura :v"
 
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-    --title="Post install on $host_name | $user SELinux $val_enforce"\
+    --title="Post install on $host_name | $desktop_envirenment | $user SELinux $val_enforce"\
     --radiolist\
     --width="800"\
     --height="590"\
@@ -284,21 +287,25 @@ while [[ $opcion != "" ]]; do
     FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"                                   "-"\
     FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"                              "-"\
     FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
-    FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"
+    FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"\
+    FALSE  "Utilidades DE"       "Utilidades Extra para tu Entorno de escritorio"                              "$desktop_envirenment"
   )
 
   case $opcion in
     "Actualizar" )
     echo $sudo_pass | sudo -S dnf upgrade -y --refresh
     echo $sudo_pass | sudo -S pip install --upgrade pip
-      ;;
+    ;;
     
     "Actualizar++" )
-    echo $sudo_pass | sudo -S dnf clean all && sudo -S dnf upgrade -y --refresh && sudo -S snap refresh 
-    echo $sudo_pass | sudo flatpak update && sudo -S npm update -g && composer global update
+    echo $sudo_pass | sudo -S dnf clean all && sudo -S dnf upgrade -y --refresh
+    echo $suco_pass | sudo -S snap refresh 
+    echo $sudo_pass | sudo flatpak update
+    echo $sudo_pass | sudo -S npm update -g
+    echo $sudo_pass | composer global update
     echo $sudo_pass | sudo -S pip install --upgrade pip
     sh $ZSH/tools/upgrade.sh
-      ;;
+    ;;
 
     "Migracion" )
     exit
@@ -328,6 +335,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "IDES" )
+    aviso "No implementado" true
     exit
     echo $sudo_pass | sudo -S dnf install 
       ;;
@@ -376,14 +384,10 @@ while [[ $opcion != "" ]]; do
     fi
       ;;
 
-
-
     "Paquetes Huerfanos" )
     exit
     echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
     ;;
-
-
 
     "Configurar git")
     echo "cual es tu nombre : "
@@ -398,6 +402,21 @@ while [[ $opcion != "" ]]; do
     git config color.ui true
     ;;
 
+    "Utilidades DE")
+    if [[ $desktop_envirenment -eq "xfce" ]]; then
+      echo $sudo_pass | sudo -S xfce4-xkb-plugin xfce4-screensaver xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
+    fi
+
+    if [[ $desktop_envirenment -eq "gnome" ]]; then
+      aviso "No uses Gnome" true
+    fi
+
+    ;;
+
+thunar-archive-plugin-
+    "Temas, Iconos")
+      aviso "Aun no implementado" true
+    ;;
 
     "Bootsplash" )
     exit
