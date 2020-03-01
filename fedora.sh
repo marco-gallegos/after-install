@@ -157,7 +157,7 @@ if [[ ! $val_oh_my_zsh ]]; then
 fi
 
 if [[ ! $val_pip || ! $val_python ]]; then
-  echo $sudo_pass | sudo -S dnf python-pip -y
+  echo $sudo_pass | sudo -S dnf install python-pip -y
   aviso "Python y/o PIP esta instalado" true
 fi
 
@@ -415,7 +415,6 @@ while [[ $opcion != "" ]]; do
 
     ;;
 
-thunar-archive-plugin-
     "Temas, Iconos")
       aviso "Aun no implementado" true
     ;;
