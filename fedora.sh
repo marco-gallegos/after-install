@@ -413,7 +413,6 @@ while [[ $opcion != "" ]]; do
 
     ;;
 
-thunar-archive-plugin-
     "Temas, Iconos")
       aviso "Aun no implementado" true
     ;;
