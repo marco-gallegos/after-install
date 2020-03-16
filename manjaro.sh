@@ -122,7 +122,16 @@ if [[ ! $val_git_flow ]]; then
   aviso "Git Flow ${config[msginstall]}" true
 fi
 
+if [[ ! $val_zsh ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm curl zsh zsh-syntax-highlighting
+  sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "Zsh ${config[msginstall]}" true
+fi
 
+if [[ ! $val_oh_my_zsh ]]; then
+  sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+  aviso "Oh My Zsh ${config[msginstall]}" true
+fi
 
 if [[ ! $val_atom ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm atom
