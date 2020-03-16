@@ -113,8 +113,8 @@ val_grubby=$(grubby --help)
 
 # aplicaciones/librerias de python
 # pendiente
-val_pip=$(pip show pip-tools)
-val_pip=$(pip show spyder) # necesitas instalar libqtxdg
+val_pip_tools=$(pip show pip-tools)
+val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
 val_docker=$(docker --version)
