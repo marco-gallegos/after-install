@@ -5,7 +5,7 @@
 * @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 pendientes :
 !Cambiar yaourt por yay puesto que yaourt fue descontinuado
-android studio
+kite
 
 stacer
 
@@ -251,36 +251,35 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Limpiar" )
-    sudo -S yay -Scc
+    echo $sudo_pass | sudo -S yay -Scc --noconfirm
       ;;
     
     "Software" )
     exit
-    echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc jdk9-openjdk jre9-openjdk
-    echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
-    echo $sudo_pass | sudo -S pacman -S --noconfirm bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
-    echo $sudo_pass | sudo -S pacman -S --noconfirm unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
-    echo $sudo_pass | sudo -S pacman -S --noconfirm qbittorrent k3b youtube-dl ffmpeg kodi audacity quodlibet handbrake
-    echo $sudo_pass | sudo -S pacman -S --noconfirm openshot obs-studio htop lshw mysql-workbench plank thunderbird
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gimp remmina freeglut gedit gedit-plugins
-    echo $sudo_pass | sudo -S pip install subnetting mysqlclient pygame yaourt
-    yaourt -S telegram-desktop-bin
-    yaourt -S jdownloader2
-    yaourt -S google-chrome
-    yaourt -S dbeaver-ce
-    yaourt -S matcha-gtk-theme
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm mariadb mariadb-clients
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm bleachbit cheese anki compton dia speedcrunch
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm unrar zip unzip unace sharutils arj p7zip freemind gparted grsync
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm qbittorrent k3b ffmpeg kodi audacity quodlibet handbrake
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm openshot obs-studio htop lshw mysql-workbench plank thunderbird
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm gimp remmina freeglut
+    echo $sudo_pass | sudo -S pip install subnetting
+    #yaourt -S telegram-desktop-bin
+    #yaourt -S jdownloader2
+    #yaourt -S google-chrome
+    #yaourt -S dbeaver-ce
+    #yaourt -S matcha-gtk-theme
     #spotify
-    gpg --keyserver hkps://pgp.mit.edu --recv-keys 0DF731E45CE24F27EEEB1450EFDC8610341D9410
-    yaourt -S spotify-stable multisystem sublime-text-dev
+    #gpg --keyserver hkps://pgp.mit.edu --recv-keys 0DF731E45CE24F27EEEB1450EFDC8610341D9410
+    #yaourt -S spotify-stable multisystem sublime-text-dev
       ;;
 
     "IDES" )
     exit
-    echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git jdk9-openjdk jre9-openjdk
-    echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
-    echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
-    echo $sudo_pass | sudo -S pacman -S --noconfirm intellij-idea-community-edition
-    echo $sudo_pass | sudo -S pacman -S --noconfirm texlive-core texmaker
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm gdb gcc python-pip gitg git
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm qt5-tools qtcreator
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
+    echo $sudo_pass | sudo -S yay -Sy --noconfirm intellij-idea-community-edition
       ;;
 
     "Swappiness" )
