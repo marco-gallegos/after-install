@@ -6,12 +6,6 @@
 pendientes :
 !Cambiar yaourt por yay puesto que yaourt fue descontinuado
 stacer
-
-dbeaver
-laravel/installer
-laravel/lumen-installer
-
-@vue/cli
 deno
 
 sublime extensions
@@ -80,6 +74,14 @@ val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
 val_java=$(pacman -Q jre8-openjdk)
+val_dbeaver=$()
+
+# npm global
+val_vue_cli=$(vue --version)
+
+# php global
+val_laravel=$(laravel --version)
+val_lumen=$(lumen --version)
 
 # aplicaciones/librerias de python
 # pendiente
@@ -159,7 +161,12 @@ fi
 
 if [[ ! $val_composer ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm composer
-  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+  existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
+  if [[ ! $existe_path ]]; then
+    echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
+  fi
+  source /etc/profile
+  aviso "Composer se ha instalado \n cierra y abre tu terminal para ver los cambios reflejados" true
 fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
@@ -198,7 +205,27 @@ fi
 
 if [[ ! $val_android_studio ]];then
   echo $sudo_pass | yay -Sy --noconfirm android-studio
-  aviso "android studio ${config[msginstall]}" true
+  aviso "Android Studio ${config[msginstall]}" true
+fi
+
+if [[ ! $val_vue_cli ]];then
+  echo $sudo_pass | sudo -S npm install -g @vue/cli
+  aviso "Vue Cli ${config[msginstall]}" true
+fi
+
+if [[ ! $val_laravel ]];then
+  composer global require laravel/installer
+  aviso "Laravel Installer ${config[msginstall]}" true
+fi
+
+if [[ ! $val_lumen ]];then
+  composer global require laravel/lumen-installer
+  aviso "Lumen Installer ${config[msginstall]}" true
+fi
+
+if [[ ! $val_dbeaver ]];then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm dbeaver
+  aviso "Dbeaver ${config[msginstall]}" true
 fi
 
 while [[ $opcion != "" ]]; do
@@ -233,7 +260,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Migracion" )
-    # hace falta un analisis
+    # hace falta un analisis funcional
     exit
     directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
     directorio_destino+="/"
