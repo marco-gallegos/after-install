@@ -159,6 +159,19 @@ if [[ ! $val_composer ]]; then
   aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
 fi
 
+if [[ ! $val_node || ! $val_npm ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm nodejs npm
+  aviso "NodeJs/npm ${config[msginstall]}" true
+fi
+
+if [[ ! $val_docker ]];then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm docker
+  echo $sudo_pass | sudo -S systemctl enable --now docker
+  echo $sudo_pass | sudo -S groupadd docker
+  echo $sudo_pass | sudo -S usermod -aG docker "$user"
+  aviso "Docker se ha instalado para usarlo reinicia el equipo" true
+fi
+
 exit
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
