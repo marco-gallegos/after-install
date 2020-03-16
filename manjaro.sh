@@ -92,9 +92,6 @@ val_docker=$(docker --version)
 # pendiente
 val_flutter=$(flutter --version)
 
-# tiendas de software
-val_snap=$(snap --version)
-
 
 # auxiliar para mostrar tanto notificaciones push como logs
 aviso() {
@@ -124,7 +121,6 @@ fi
 
 if [[ ! $val_zsh ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm curl zsh zsh-syntax-highlighting
-  sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
   aviso "Zsh ${config[msginstall]}" true
 fi
 
@@ -133,19 +129,34 @@ if [[ ! $val_oh_my_zsh ]]; then
   aviso "Oh My Zsh ${config[msginstall]}" true
 fi
 
+if [[ ! $val_code ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm code
+  aviso "Visual Studio Code ${config[msginstall]}" true
+fi
+
 if [[ ! $val_atom ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm atom
   aviso "Atom ${config[msginstall]}" true
 fi
 
-if [[ ! $val_pip ]]; then
+if [[ ! $val_pip || ! $val_python ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm python-pip
   aviso "Python ${config[msginstall]}" true
 fi
 
-if [[ ! $val_zsh ]]; then
-  echo $sudo_pass | sudo -S yay -Sy --noconfirm python-pip
-  aviso "Python PIP ${config[msginstall]}" true
+if [[ ! $val_php ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm php php-gd
+  aviso "PHP se ha instalado" true
+fi
+
+if [[ ! $val_codium ]]; then
+  echo $sudo_pass | sudo -S snap install codium --classic
+  aviso "Vs Codium ${config[msginstall]}" true
+fi
+
+if [[ ! $val_composer ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm composer
+  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
 fi
 
 exit
