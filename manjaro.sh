@@ -1,70 +1,151 @@
 #!/bin/bash
+: '
+* @author Marco A Gallegos
+* @date 2017-01-01
+* @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
+pendientes :
+!Cambiar yaourt por yay puesto que yaourt fue descontinuado
+
+dbeaver
+laravel/installer
+laravel/lumen-installer
+
+@vue/cli
+deno
+
+sublime extensions
+All Autocomplete
+'
+#primer paso validar que sea fedora en version 30 o superior
+distro_text=$(grep "^NAME" /etc/os-release)
+IFS='=' # space is set as delimiter
+read -ra distro_arr <<< "$distro_text" # distro_text is read into an array as tokens separated by IFS
+
+distro_name=${distro_arr[1]}
+desktop_envirenment=$DESKTOP_SESSION
+
+if [[ $distro_name != '"Manjaro Linux"' ]]; then
+  echo "no es una distro Manjaro"
+  exit
+else
+  echo "distro soportada"
+fi
+
+user=$(whoami)
+
+declare -A config # especificamos que config es un array
+config=(
+  [msginstall]='Ahora esta instalado en tu sistema'
+
+  [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+
+  [flutterurl]='https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.12.13+hotfix.5-stable.tar.xz'
+
+  [composerbinpath]="export PATH=\$PATH:/home/$user/.config/composer/vendor/bin"
+)
+
+sudo_pass=$(zenity --password --title="contraseña sudo")
+if [[ ! $sudo_pass ]]; then
+  exit
+fi
+
 #evitar reescribir los archivos.old
+val_yay=$(yay --version)
+
+# el swapiness activo en el sistema
 val_swappines=$(cat /proc/sys/vm/swappiness)
+# este archivo almacena el valor swapiness editado por el usuario
 val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
+
 host_name=$(uname -n)
 val_grubboot=$(grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub)
 val_graciasudo="basura :v"
-user=$(whoami)
-val_atom=$(atom --version)
-val_yaourt=$(yaourt -V)
-val_pip=$(pip -V)
 
-function aviso {
+# librerias que se deben instalar
+# val_pythondevel=$(grep "python3-devel" ${config[rpmqafile]})
+
+# aplicaciones/etc que se deben instalar
+val_atom=$(atom --version)
+val_zsh=$(zsh --version)
+val_oh_my_zsh=$(echo $ZSH)
+val_python=$(python --version)
+val_pip=$(pip -V)
+val_git=$(git --version)
+val_code=$(code --version)
+val_php=$(php --version)
+val_codium=$(codium --version)
+val_composer=$(composer --version)
+val_node=$(node --version)
+val_npm=$(npm --version)
+
+# aplicaciones/librerias de python
+# pendiente
+val_pip_tools=$(pip show pip-tools)
+val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
+
+# probando
+val_docker=$(docker --version)
+# pendiente
+
+#sdks
+# pendiente
+val_flutter=$(flutter --version)
+
+# tiendas de software
+val_snap=$(snap --version)
+
+
+# auxiliar para mostrar tanto notificaciones push como logs
+aviso() {
   echo "$1"
-  zenity --notification --window-icon="info" --text="$1"
+  if $2 ; then
+    zenity --notification --window-icon="info" --text="$1"
+  fi
 }
 
-
 opcion="basura :v"
-sudo_pass=$(zenity --password --title="contraseña sudo")
-#root_pass=$(zenity --password --title="contraseña root")
 
-if [[ ! $val_atom ]]; then
-  aviso "Atom\nNo tienes instalado atom"
-  aviso "Atom\nInstalando atom"
-  echo $sudo_pass | sudo -S pacman -S --noconfirm atom
-  aviso "Atom\nAhora esta instalado en tu sistema"
+if [[ ! $val_yay ]]; then
+  echo $sudo_pass | sudo -S pacman -Sy --noconfirm yay
+  aviso "yay ${config[msginstall]}" true
 fi
 
-if [[ ! $val_yaourt ]]; then
-  aviso "Yaourt\nNo tienes instalado yaourt"
-  aviso "Yaout\nInstalando yaourt"
-  echo $sudo_pass | sudo -S pacman -S --noconfirm yaourt
-  aviso "Yaourt\nAhora esta instalado en tu sistema"
+if [[ ! $val_atom ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm atom
+  aviso "Atom ${config[msginstall]}" true
 fi
 
 if [[ ! $val_pip ]]; then
-  aviso "Python PIP\nNo tienes instalado python-pip"
-  aviso "Python PIP\nInstalando Pyton PIP"
-  echo $sudo_pass | sudo -S pacman -S --noconfirm python-pip
-  aviso "Python PIP\nAhora esta instalado en tu sistema"
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm python-pip
+  aviso "Python ${config[msginstall]}" true
 fi
 
-val_atom=$(atom --version)
-val_yaourt=$(yaourt -V)
-val_pip=$(pip -V)
+if [[ ! $val_ ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm python-pip
+  aviso "Python PIP ${config[msginstall]}" true
+fi
 
+exit
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
-   --title="Algunas opciones comunes para despues de instalar Manjaro"\
-   --radiolist\
-   --width="700"\
-   --height="500"\
-   --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
-   TRUE   "Actualizar"          "Actualizar el sistema"                               "-"\
-   FALSE  "Migracion"           "Respaldo Pre formateo de PC"                         "$host_name"\
-   FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-"\
-   FALSE  "Software"            "Software basico "                                    "-"\
-   FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
-   FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
-   FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_atom[0]}"\
-   FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
-   FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
-   FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
-   FALSE  "Configurar git"      "Configurar nombre,email y editor para git"           "-"\
-   FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"\
-   FALSE  "Barra Pacman"        "cambiar barra de progreso de pacman por un pacman"   "-"
+    --title="Algunas opciones comunes para despues de instalar Manjaro"\
+    --radiolist\
+    --width="700"\
+    --height="500"\
+    --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
+    TRUE   "Actualizar"          "Actualizar el sistema"                               "-"\
+    FALSE  "Migracion"           "Respaldo Pre formateo de PC"                         "$host_name"\
+    FALSE  "Limpiar"             "Limpar la cache de pacman"                           "-"\
+    FALSE  "Software"            "Software basico "                                    "-"\
+    FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
+    FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
+    FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_atom[0]}"\
+    FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
+    FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
+    FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
+    FALSE  "Configurar git"      "Configurar nombre,email y editor para git"           "-"\
+    FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"\
+    FALSE  "Barra Pacman"        "cambiar barra de progreso de pacman por un pacman"   "-"
   )
 
   case $opcion in
