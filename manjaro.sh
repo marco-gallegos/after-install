@@ -5,8 +5,6 @@
 * @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 pendientes :
 !Cambiar yaourt por yay puesto que yaourt fue descontinuado
-kite
-
 stacer
 
 dbeaver
@@ -229,6 +227,9 @@ while [[ $opcion != "" ]]; do
     "Actualizar" )
     yay -Syua --noconfirm
     echo $sudo_pass | sudo -S pip install --upgrade pip
+    echo $suco_pass | sudo -S snap refresh
+    echo $sudo_pass | sudo -S npm update -g
+    composer global update
       ;;
 
     "Migracion" )
@@ -264,6 +265,7 @@ while [[ $opcion != "" ]]; do
     echo $sudo_pass | sudo -S yay -Sy --noconfirm openshot obs-studio htop lshw mysql-workbench plank thunderbird
     echo $sudo_pass | sudo -S yay -Sy --noconfirm gimp remmina freeglut
     echo $sudo_pass | sudo -S pip install subnetting
+    bash -c "$(wget -q -O - https://linux.kite.com/dls/linux/current)"
     #yaourt -S telegram-desktop-bin
     #yaourt -S jdownloader2
     #yaourt -S google-chrome

@@ -302,7 +302,7 @@ while [[ $opcion != "" ]]; do
     echo $suco_pass | sudo -S snap refresh 
     echo $sudo_pass | sudo flatpak update
     echo $sudo_pass | sudo -S npm update -g
-    echo $sudo_pass | composer global update
+    composer global update
     echo $sudo_pass | sudo -S pip install --upgrade pip
     sh $ZSH/tools/upgrade.sh
     ;;
