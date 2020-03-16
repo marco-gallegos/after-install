@@ -5,6 +5,9 @@
 * @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 pendientes :
 !Cambiar yaourt por yay puesto que yaourt fue descontinuado
+android studio
+
+stacer
 
 dbeaver
 laravel/installer
@@ -78,6 +81,7 @@ val_codium=$(codium --version)
 val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
+val_java=$(pacman -Q jre8-openjdk)
 
 # aplicaciones/librerias de python
 # pendiente
@@ -86,11 +90,12 @@ val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
 val_docker=$(docker --version)
-# pendiente
 
 #sdks
-# pendiente
 val_flutter=$(flutter --version)
+val_android_studio=$( pacman -Q android-studio)
+
+# pendiente
 
 
 # auxiliar para mostrar tanto notificaciones push como logs
@@ -172,7 +177,32 @@ if [[ ! $val_docker ]];then
   aviso "Docker se ha instalado para usarlo reinicia el equipo" true
 fi
 
-exit
+if [[ ! $val_flutter ]];then
+  yay -Sy --noconfirm flutter
+  aviso "Flutter ${config[msginstall]}" true
+fi
+
+# dependencias de pip
+if [[ ! $val_pip_tools ]];then
+  echo $sudo_pass | sudo -S pip install pip-tools
+  aviso "Pip Tools ${config[msginstall]}" true
+fi
+
+if [[ ! $val_spyder ]];then
+  echo $sudo_pass | sudo -S pip install spyder
+  aviso "Spyder ${config[msginstall]}" true
+fi
+
+if [[ ! $val_java ]];then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm jre8-openjdk
+  aviso "Java ${config[msginstall]}" true
+fi
+
+if [[ ! $val_android_studio ]];then
+  echo $sudo_pass | yay -Sy --noconfirm android-studio
+  aviso "android studio ${config[msginstall]}" true
+fi
+
 while [[ $opcion != "" ]]; do
   opcion=$(zenity --list\
     --title="Algunas opciones comunes para despues de instalar Manjaro"\
@@ -197,12 +227,13 @@ while [[ $opcion != "" ]]; do
 
   case $opcion in
     "Actualizar" )
-    echo $sudo_pass | sudo -S pacman-mirrors -G
-    yaourt -Syua --noconfirm
+    yay -Syua --noconfirm
     echo $sudo_pass | sudo -S pip install --upgrade pip
       ;;
 
     "Migracion" )
+    # hace falta un analisis
+    exit
     directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
     directorio_destino+="/"
     directorio_destino+=$host_name
@@ -220,12 +251,12 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "Limpiar" )
-    sudo -S pacman -Scc
-    sudo -S yaourt -Scc
+    sudo -S yay -Scc
       ;;
+    
     "Software" )
+    exit
     echo $sudo_pass | sudo -S pacman -S --noconfirm curl zsh zsh-autosuggestions zsh-completions zsh-history-substring-search  zsh-syntax-highlighting fakeroot manjaro-tools-pkg manjaro-tools-base autoconf gcc jdk9-openjdk jre9-openjdk
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
     echo $sudo_pass | sudo -S pacman -S --noconfirm mariadb mariadb-clients php phpmyadmin
     echo $sudo_pass | sudo -S pacman -S --noconfirm bleachbit vlc-nightly cheese python-pip anki compton dia speedcrunch
     echo $sudo_pass | sudo -S pacman -S --noconfirm unrar zip unzip unace sharutils arj p7zip freemind gparted grsync ttf-inconsolata
@@ -244,6 +275,7 @@ while [[ $opcion != "" ]]; do
       ;;
 
     "IDES" )
+    exit
     echo $sudo_pass | sudo -S pacman -S --noconfirm gdb gcc python-pip gitg git jdk9-openjdk jre9-openjdk
     echo $sudo_pass | sudo -S pacman -S --noconfirm qt5-tools qtcreator
     echo $sudo_pass | sudo -S pacman -S --noconfirm geany geany-plugins atom eric pycharm-community-edition codeblocks
@@ -251,8 +283,8 @@ while [[ $opcion != "" ]]; do
     echo $sudo_pass | sudo -S pacman -S --noconfirm texlive-core texmaker
       ;;
 
-
     "Swappiness" )
+    exit
     if [[ -e "/etc/sysctl.d/99-sysctl.conf" ]]; then
       echo existe
     else
@@ -272,18 +304,12 @@ while [[ $opcion != "" ]]; do
     fi
       ;;
 
-
     "Complementos ATOM" )
-    if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
-      echo instalare atom
-      echo $sudo_pass | sudo -S pacman -S --noconfirm atom
-    fi
     echo $sudo_pass | sudo -S -u $user apm install color-picker emmet linter linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax atom-material-ui seti-syntax linter-ui-default ide-php atom-ide-ui
       ;;
 
-
-
     "SUDO" )
+    exit
     #Defaults	timestamp_timeout=0
     if [[ -e "/etc/sudoers.old" ]]; then
       echo ya tienes un archivo old de respaldo
@@ -299,9 +325,8 @@ while [[ $opcion != "" ]]; do
     fi
       ;;
 
-
-
     "Cargar SSH" )
+    exit
     if [[ -e "~/.ssh/id_rsa" ]]; then
       echo cambiando permiso a tu llave
       chmod 700 ~/.ssh/id_rsa
@@ -311,13 +336,10 @@ while [[ $opcion != "" ]]; do
     fi
       ;;
 
-
-
     "Paquetes Huerfanos" )
+    exit
     echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
     ;;
-
-
 
     "Configurar git")
     echo "cual es tu nombre : "
@@ -333,6 +355,7 @@ while [[ $opcion != "" ]]; do
     ;;
 
     "Bootsplash" )
+    exit
     if [[ -e "/etc/default/grub.old" ]]; then
       echo ya tienes un archivo old de respaldo
     else
