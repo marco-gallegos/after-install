@@ -71,6 +71,7 @@ val_oh_my_zsh=$(echo $ZSH)
 val_python=$(python --version)
 val_pip=$(pip -V)
 val_git=$(git --version)
+val_git_flow=$(git flow version)
 val_code=$(code --version)
 val_php=$(php --version)
 val_codium=$(codium --version)
@@ -105,10 +106,23 @@ aviso() {
 
 opcion="basura :v"
 
+# instalamos todo aquello necesario
 if [[ ! $val_yay ]]; then
   echo $sudo_pass | sudo -S pacman -Sy --noconfirm yay
-  aviso "yay ${config[msginstall]}" true
+  aviso "Yay ${config[msginstall]}" true
 fi
+
+if [[ ! $val_git ]]; then
+  echo $sudo_pass | sudo -S yay -Sy --noconfirm git
+  aviso "Git ${config[msginstall]}" true
+fi
+
+if [[ ! $val_git_flow ]]; then
+  yay -Sy --noconfirm gitflow-avh
+  aviso "Git Flow ${config[msginstall]}" true
+fi
+
+
 
 if [[ ! $val_atom ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm atom
@@ -120,7 +134,7 @@ if [[ ! $val_pip ]]; then
   aviso "Python ${config[msginstall]}" true
 fi
 
-if [[ ! $val_ ]]; then
+if [[ ! $val_zsh ]]; then
   echo $sudo_pass | sudo -S yay -Sy --noconfirm python-pip
   aviso "Python PIP ${config[msginstall]}" true
 fi
