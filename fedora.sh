@@ -404,7 +404,7 @@ while [[ $opcion != "" ]]; do
 
     "Utilidades DE")
     if [[ $desktop_envirenment -eq "xfce" ]]; then
-      echo $sudo_pass | sudo -S xfce4-xkb-plugin xfce4-screensaver xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
+      echo $sudo_pass | sudo -S dnf install xfce4-xkb-plugin xfce4-screensaver xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
     fi
 
     if [[ $desktop_envirenment -eq "gnome" ]]; then
