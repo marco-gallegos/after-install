@@ -74,7 +74,7 @@ val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
 val_java=$(pacman -Q jre8-openjdk)
-val_dbeaver=$()
+val_dbeaver="ok"
 
 # npm global
 val_vue_cli=$(vue --version)
@@ -94,8 +94,6 @@ val_docker=$(docker --version)
 #sdks
 val_flutter=$(flutter --version)
 val_android_studio=$( pacman -Q android-studio)
-
-# pendiente
 
 
 # auxiliar para mostrar tanto notificaciones push como logs
@@ -233,7 +231,7 @@ while [[ $opcion != "" ]]; do
     --title="Algunas opciones comunes para despues de instalar Manjaro"\
     --radiolist\
     --width="700"\
-    --height="500"\
+    --height="600"\
     --column="" --column="Opcion" --column="Descripcion" --column="Estado actual"\
     TRUE   "Actualizar"          "Actualizar el sistema"                               "-"\
     FALSE  "Migracion"           "Respaldo Pre formateo de PC"                         "$host_name"\
@@ -241,13 +239,14 @@ while [[ $opcion != "" ]]; do
     FALSE  "Software"            "Software basico "                                    "-"\
     FALSE  "IDES"                "IDE's y editores que uso para programar"             "-"\
     FALSE  "Swappiness"          "Editar el uso de la swap"                            "$val_swappines"\
-    FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "${val_atom[0]}"\
+    FALSE  "Complementos ATOM"   "Complementos basicos para el editor atom"            "-"\
     FALSE  "SUDO"                "Eliminar el periodo de gracia de sudo"               "-"\
     FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.ssh"           "-"\
     FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del sistema"      "-"\
     FALSE  "Configurar git"      "Configurar nombre,email y editor para git"           "-"\
     FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                   "-"\
-    FALSE  "Barra Pacman"        "cambiar barra de progreso de pacman por un pacman"   "-"
+    FALSE  "Barra Pacman"        "cambiar barra de progreso de pacman por un pacman"   "-"\
+    FALSE  "Microzoa"            "Instalar Tema de cursor Microzoa"                    ""
   )
 
   case $opcion in
@@ -403,6 +402,11 @@ while [[ $opcion != "" ]]; do
     fi
     echo $sudo_pass | sudo -S sed -i "s%#Color%Color\nILoveCandy%g" /etc/pacman.conf
     aviso "Pacman\nAhora pacman esta en la terminal"
+    ;;
+    
+    "Microzoa")
+    echo $sudo_pass | sudo -S 7z x resources/154458-microzoa.7z -o/usr/share/icons/ -y
+    aviso "Microzoa ${config[msginstall]}" true
     ;;
   esac
 
