@@ -289,6 +289,7 @@ while [[ $opcion != "" ]]; do
     FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
     FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"\
     FALSE  "Utilidades DE"       "Utilidades Extra para tu Entorno de escritorio"                              "$desktop_envirenment"
+    FALSE  "Microzoa"            "Instalar tema Microzoa"                                                      ""
   )
 
   case $opcion in
