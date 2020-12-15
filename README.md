@@ -9,8 +9,6 @@ shell scripts para operaciones comunes despues de instalar distros linux, pensad
 
 ## To Do
 
-- [ ] docker file for testing
-- [ ] full fedora support
 - [ ] rsync backups
 
 

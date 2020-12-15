@@ -3,19 +3,10 @@
 * @author Marco A Gallegos
 * @date 2020-01-01
 * @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
-pendientes :
-dbeaver
-laravel/installer
-laravel/lumen-installer
-
-@vue/cli
-deno
-
-sublime extensions
 '
 
 
-#primer paso validar que sea fedora en version 30 o superior
+#primer paso validar que sea fedora en version 32 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
 version_text=$(grep "^VERSION_ID" /etc/os-release)
 IFS='=' # space is set as delimiter
@@ -30,7 +21,7 @@ distro_version=${version_arr[1]}
 fedora_version_rpm=$(rpm -E %fedora)
 desktop_envirenment=$DESKTOP_SESSION # variable de entorno
 
-if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 30 ]]; then
+if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 32 ]]; then
   echo "no es una distro fedora soportada"
   exit
 else
@@ -96,8 +87,10 @@ val_enforce=$(getenforce)
 val_pythondevel=$(grep "python3-devel" ${config[rpmqafile]})
 
 # aplicaciones/etc que se deben instalar
-val_zsh=$(zsh --version)
-val_oh_my_zsh=$(echo $ZSH)
+#val_zsh=$(zsh --version)
+#val_oh_my_zsh=$(echo $ZSH)
+# TODO testear
+val_oh_my_bash=$(ls ~/.oh-my-bash/)
 val_python=$(python --version)
 val_pip=$(pip -V)
 val_git=$(git --version)
@@ -112,7 +105,6 @@ val_npm=$(npm --version)
 val_grubby=$(grubby --help)
 
 # aplicaciones/librerias de python
-# pendiente
 val_pip_tools=$(pip show pip-tools)
 val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
 
@@ -143,16 +135,10 @@ if [[ ! $val_git ]]; then
   aviso "Git se ha instalado" true
 fi
 
-if [[ ! $val_zsh ]]; then
-  echo $sudo_pass | sudo -S dnf install curl zsh zsh-syntax-highlighting -y
-  sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado zsh" true
-fi
-
-if [[ ! $val_oh_my_zsh ]]; then
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-  aviso "se ha instalado oh my zsh" true
-fi
+#if [[ ! $val_oh_my_zsh ]]; then
+#  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
+#  aviso "se ha instalado oh my zsh" true
+#fi
 
 if [[ ! $val_pip || ! $val_python ]]; then
   echo $sudo_pass | sudo -S dnf install python-pip -y
@@ -241,18 +227,17 @@ if [[ ! $val_grubby ]];then
   aviso "Grubby se ha instalado" true
 fi
 
-# se ejecuta correctamente pendiente testear
-if [[ ! $val_docker && $val_grubby ]];then
-  # https://linuxconfig.org/how-to-install-docker-on-fedora-31
-  echo $sudo_pass | sudo -S grubby --update-kernel=ALL --args='systemd.unified_cgroup_hierarchy=0'
-  echo $sudo_pass | sudo -S dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo
-  echo $sudo_pass | sudo -S dnf install -y docker-ce
-  echo $sudo_pass | sudo -S systemctl enable --now docker
-  echo $sudo_pass | sudo -S groupadd docker
-  echo $sudo_pass | sudo -S usermod -aG docker "$user"
-  val_grubby=$(grubby --help)
-  aviso "Docker se ha instalado para usarlo reinicia el equipo" true
-fi
+#if [[ ! $val_docker && $val_grubby ]];then
+#  # https://linuxconfig.org/how-to-install-docker-on-fedora-31
+#  echo $sudo_pass | sudo -S grubby --update-kernel=ALL --args='systemd.unified_cgroup_hierarchy=0'
+#  echo $sudo_pass | sudo -S dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo
+#  echo $sudo_pass | sudo -S dnf install -y docker-ce
+#  echo $sudo_pass | sudo -S systemctl enable --now docker
+#  echo $sudo_pass | sudo -S groupadd docker
+#  echo $sudo_pass | sudo -S usermod -aG docker "$user"
+#  val_grubby=$(grubby --help)
+#  aviso "Docker se ha instalado para usarlo reinicia el equipo" true
+#fi
 
 if [[ ! $val_flutter ]];then
   # https://flutter.dev/docs/get-started/install/linux
@@ -305,10 +290,11 @@ while [[ $opcion != "" ]]; do
     echo $sudo_pass | sudo -S npm update -g
     composer global update
     echo $sudo_pass | sudo -S pip install --upgrade pip
-    sh $ZSH/tools/upgrade.sh
+    #sh $ZSH/tools/upgrade.sh
     ;;
 
     "Migracion" )
+    echo "WIP"
     exit
     directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
     directorio_destino+="/"
@@ -404,6 +390,7 @@ while [[ $opcion != "" ]]; do
     ;;
 
     "Utilidades DE")
+    exit 0
     if [[ $desktop_envirenment -eq "xfce" ]]; then
       echo $sudo_pass | sudo -S dnf install xfce4-xkb-plugin xfce4-screensaver xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
     fi
