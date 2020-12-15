@@ -12,8 +12,6 @@ laravel/lumen-installer
 deno
 
 sublime extensions
-All Autocomplete
-oh my zsh theme power10k
 '
 
 
