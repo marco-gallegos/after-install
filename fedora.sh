@@ -115,8 +115,8 @@ val_grubby=$(grubby --help)
 
 # aplicaciones/librerias de python
 # pendiente
-val_pip=$(pip show pip-tools)
-val_pip=$(pip show spyder) # necesitas instalar libqtxdg
+val_pip_tools=$(pip show pip-tools)
+val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
 val_docker=$(docker --version)
@@ -291,6 +291,7 @@ while [[ $opcion != "" ]]; do
     FALSE  "Configurar git"      "Configurar nombre,email y editor para git"                                   "-"\
     FALSE  "Bootsplash"          "Eliminar el bootsplash solo texto"                                           "-"\
     FALSE  "Utilidades DE"       "Utilidades Extra para tu Entorno de escritorio"                              "$desktop_envirenment"
+    FALSE  "Microzoa"            "Instalar tema Microzoa"                                                      ""
   )
 
   case $opcion in
@@ -406,7 +407,7 @@ while [[ $opcion != "" ]]; do
 
     "Utilidades DE")
     if [[ $desktop_envirenment -eq "xfce" ]]; then
-      echo $sudo_pass | sudo -S xfce4-xkb-plugin xfce4-screensaver xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
+      echo $sudo_pass | sudo -S dnf install xfce4-xkb-plugin xfce4-screensaver xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
     fi
 
     if [[ $desktop_envirenment -eq "gnome" ]]; then
