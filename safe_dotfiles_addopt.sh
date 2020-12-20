@@ -3,22 +3,42 @@
 @author Marco A Gallegos
 @Date 2020/12/18
 @Descripcion
-    Este archivo debe restaurar los dotfiles que se tengan configurados, esto pensando en que ya no quieres usar stow
+    este archivo debe hacer un backup de los archivos originales de los dotfiles configurados
+    solo si no existe alguno, despues se debe usar el stow sobre los dotfiles.
 '
 
 dotfiles=(
     "bash" "alacritty"
 )
 
+declare -A context_of_original_files # especificamos que es un array
+context_of_original_files=(
+    [bash]="$HOME"
+    [alacritty]="$HOME"
+)
+
 declare -A original_files # especificamos que es un array
 original_files=(
-    [bash]="$HOME/.bashrc"
-    [alacritty]="$HOME/.config/alacritty/alacritty.yml"
+    [bash]="/.bashrc"
+    [alacritty]="/.config/alacritty/alacritty.yml"
 )
+
 
 for i in ${dotfiles[@]}
 do
-    #echo "${original_files[$i]}" "${original_files[$i]}.bak"
-    cp -v "${original_files[$i]}" "${original_files[$i]}.bak"
-    rm -v "${original_files[$i]}"
+    # backup
+    if [[ -f "${context_of_original_files[$i]}${original_files[$i]}.bak" ]]; then
+        echo "ya tenemos respaldo de $i"
+    else
+        #echo "${original_files[$i]}" "${original_files[$i]}.bak"
+        cp -v "${context_of_original_files[$i]}${original_files[$i]}" "${context_of_original_files[$i]}${original_files[$i]}.bak"
+        if [[ -f "${context_of_original_files[$i]}${original_files[$i]}.bak" ]]; then
+            echo "se creo el respaldo de $i"
+        fi
+    fi
+    
+    rm -v "${context_of_original_files[$i]}${original_files[$i]}"
+
+    # stow
+    stow --adopt -vt ${context_of_original_files[$i]} $i
 done
