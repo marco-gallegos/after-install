@@ -8,19 +8,21 @@
 '
 
 dotfiles=(
-    "bash" "alacritty"
+    "bash" "alacritty" "htop"
 )
 
 declare -A context_of_original_files # especificamos que es un array
 context_of_original_files=(
     [bash]="$HOME"
     [alacritty]="$HOME"
+    [htop]="$HOME"
 )
 
 declare -A original_files # especificamos que es un array
 original_files=(
     [bash]="/.bashrc"
     [alacritty]="/.config/alacritty/alacritty.yml"
+    [htop]="/.config/htop/htoprc"
 )
 
 
