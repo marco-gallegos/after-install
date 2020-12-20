@@ -16,7 +16,7 @@ read -ra version_arr <<< "$version_text"
 
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
-fedora_version_rpm=$(rpm -E %fedora)
+#fedora_version_rpm=$(rpm -E %fedora)
 desktop_envirenment=$DESKTOP_SESSION # variable de entorno
 
 #if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 32 ]]#; then
