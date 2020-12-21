@@ -6,6 +6,15 @@
 	proveer instalaciones basicas para raspbian 10 como servidor
 '
 
+# revisiones preliminares
+$val_stow=$(stow --version)
+#instalaciones necesarias
+if [[ ! $val_stow ]]; then
+	echo $sudo_pass | sudo apt install stow -y
+	aviso "se instalo stow" true
+fi
+
+
 #primer paso validar que sea fedora en version 32 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
 version_text=$(grep "^VERSION_ID" /etc/os-release)
@@ -149,35 +158,12 @@ fi
 
 opcion="basura :v"
 
-#while [[ $opcion != "" ]]; do
-#  opcion=$(zenity --list\
-#	--title="Post install on $host_name | $desktop_envirenment | $user SELinux #$val_enforce"\
-#	--radiolist\
-#	--width="800"\
-#	--height="590"\
-#	--column="" --column="Opcion" --column="Descripcion" --column="Info"\
-#	TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)#"                                            "-"\
-#	FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, #snap, flatpak, etc)"   "-"\
-#	FALSE  "Pip Reqirements"     "Sincronizar pip reqirements"   "-"\
-#	FALSE  "Migracion"           "Respaldo Pre formateo de #PC"                                                 "-"\
-#	FALSE  "Limpiar"             "Limpar la cache de #pacman"                                                   "-"\
-#	FALSE  "Software"            "Software basico #"                                                            "-"\
-#	FALSE  "IDES"                "IDE's y editores que uso para #programar"                                     "-"\
-#	FALSE  "Swappiness"          "Editar el uso de la #swap"                                                    "$val_swappines"\
-#	FALSE  "Complementos ATOM"   "Complementos basicos para el editor #atom"                                    "${val_atom[0]}"\
-#	FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.#ssh"                                   "-"\
-#	FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del #sistema"                              "-"\
-#	FALSE  "Configurar git"      "Configurar nombre,email y editor para #git"                                   "-"\
-#	FALSE  "Bootsplash"          "Eliminar el bootsplash solo #texto"                                           "-"\
-#	FALSE  "Utilidades DE"       "Utilidades Extra para tu Entorno de #escritorio"                              "$desktop_envirenment"
-#	FALSE  "Microzoa"            "Instalar tema #Microzoa"                                                      ""
-#  )
-#
-#  case $opcion in
-#	"Actualizar" )
-#	echo $sudo_pass | sudo apt upgrade -y --refresh
-#	echo $sudo_pass | sudo -S pip install --upgrade pip
-#	;;
+
+case $opcion in
+	"update" )
+		echo $sudo_pass | sudo apt upgrade -y --refresh
+		echo $sudo_pass | sudo pip install --upgrade pip
+	;;
 #	
 #	"Actualizar++" )
 #	echo $sudo_pass | sudo apt clean all && sudo apt upgrade -y --refresh
@@ -304,8 +290,8 @@ opcion="basura :v"
 #	"Bootsplash" )
 #	exit
 #	;;
-#  esac
-#
-#done
+esac
+
+done
 
 echo "saliendo del script"
