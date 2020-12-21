@@ -1,9 +1,36 @@
 #!/bin/bash
 : '
-* @author Marco A Gallegos
-* @date 2020-01-01
-* @descripcion proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
+* @Author Marco A Gallegos
+* @Date 2020-01-01
+* @Descripcion 
+  proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 '
+#echo "argumento 1 de ejecucion de script"
+#echo $1
+
+# funciones auxiliares globales
+read_conf_var(){
+    VAR=$(grep $1 config.ini | cut -d '=' -f2)
+    echo $VAR;
+}
+
+# auxiliar para mostrar tanto notificaciones push como logs
+aviso() {
+  echo "$1"
+  if $2 ; then
+    zenity --notification --window-icon="info" --text="$1"
+  fi
+}
+
+# revisiones preliminares
+$val_zenity=$(zenity --version)
+$val_stow=$(stow --version)
+#instalaciones necesarias
+if [[ ! $val_stow ]]; then
+  echo $sudo_pass | sudo -S dnf install stow -y
+  aviso "se instalo stow" true
+fi
+
 
 
 #primer paso validar que sea fedora en version 32 o superior
@@ -12,9 +39,6 @@ version_text=$(grep "^VERSION_ID" /etc/os-release)
 IFS='=' # space is set as delimiter
 read -ra distro_arr <<< "$distro_text" # distro_text is read into an array as tokens separated by IFS
 read -ra version_arr <<< "$version_text"
-
-# instalar grupo Development Tools
-# instalar qt5-devel cmake 
 
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
@@ -119,15 +143,6 @@ val_flutter=$(flutter --version)
 # tiendas de software
 val_snap=$(snap --version)
 val_flatpak=$(flatpak --version)
-
-
-# auxiliar para mostrar tanto notificaciones push como logs
-aviso() {
-  echo "$1"
-  if $2 ; then
-    zenity --notification --window-icon="info" --text="$1"
-  fi
-}
 
 # instalamos todo aquello necesario
 if [[ ! $val_git ]]; then
@@ -296,19 +311,8 @@ while [[ $opcion != "" ]]; do
     "Migracion" )
     echo "WIP"
     exit
-    directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
-    directorio_destino+="/"
-    directorio_destino+=$host_name
-    mkdir $directorio_destino
-    directorio_destino+="/"
-    directorio_destino+=$user
-    mkdir $directorio_destino
-    cp -R $HOME/.ssh $directorio_destino
-    echo $sudo_pass | sudo -S 7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z /srv/http
-    for x in `ls $HOME`;
-    do
-    cp -R $HOME/$x $directorio_destino;
-    done
+    #directorio_destino=$(zenity --file-selection --directory --title="Directorio de destino para el respaldo")
+    
     aviso "respaldo terminado"
       ;;
 

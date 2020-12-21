@@ -13,10 +13,11 @@ Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun
 - [ ] rsync backups
 
 
-###### Soporte para :
+###### Soporte para : 
 
 * manjaro / arch linux
 * fedora
+* raspbian
 
 
 ## dotfiles
@@ -40,3 +41,7 @@ stow -Dv -t "directorioraiz" "modulo"
 ejemplo:
 
 stow -Dv -t ~ bash
+
+## recursos
+
+7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z origen
