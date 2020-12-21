@@ -378,7 +378,8 @@ while [[ $opcion != "" ]]; do
     git config --global user.name "$nombre_git"
     git config --global user.email "$email_git"
     git config --global core.editor "$editor_git"
-    git config color.ui true
+    git config --global color.ui true
+    #git config color.ui true
     ;;
 
     "Bootsplash" )

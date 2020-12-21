@@ -78,6 +78,7 @@ val_php=$(php --version)
 val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
+val_pm2=$(pm2 --version)
 
 # aplicaciones/librerias de python
 val_pip_tools=$(pip3 show pip-tools)
@@ -114,19 +115,21 @@ fi
 
 if [[ ! $val_php ]]; then
 	# https://rpmfusion.org/Configuration
-	echo $sudo_pass | sudo apt -y install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
+	echo $sudo_pass | sudo apt -y install php php-cli php-fpm php-mysql php-zip php-dev php-gd php-mbstring php-curl php-xml php-pear php-bcmath php-json
 	aviso "PHP se ha instalado" true
 fi
 
 if [[ ! $val_composer ]]; then
-	# https://rpmfusion.org/Configuration
-	echo $sudo_pass | sudo apt -y install composer
+	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+	echo $sudo_pass | sudo php composer-setup.php --install-dir=/bin --filename=composer
+	php -r "unlink('composer-setup.php');"
+	
 	existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
 	if [[ ! $existe_path ]]; then
 		echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
 	fi
 	source /etc/profile
-	aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+	aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados"
 fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
@@ -136,7 +139,7 @@ fi
 
 if [[ ! $val_docker ]];then
 	echo $sudo_pass | sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-	echo $sudo_pass | curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+	echo $sudo_pass | sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 	echo $sudo_pass | sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/debian$(lsb_release -cs)stable"
 	echo $sudo_pass | sudo apt update -y
 	echo $sudo_pass | sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
