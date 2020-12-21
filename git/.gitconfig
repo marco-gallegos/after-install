@@ -1,0 +1,11 @@
+[user]
+	email = ma_galeza@hotmail.com
+	name = marco-gallegos
+[core]
+	editor = nvim
+[credential]
+	helper = store
+[color]
+	ui = true
+[alias]
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
