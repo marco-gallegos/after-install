@@ -8,6 +8,11 @@
 #echo "argumento 1 de ejecucion de script"
 #echo $1
 
+# qemu
+# sudo dnf -y install bridge-utils libvirt virt-install qemu-kvm
+# sudo dnf -y install virt-top libguestfs-tools
+# sudo dnf -y install virt-manager
+
 # funciones auxiliares globales
 read_conf_var(){
     VAR=$(grep $1 config.ini | cut -d '=' -f2)
