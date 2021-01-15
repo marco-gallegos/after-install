@@ -82,3 +82,34 @@ echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="2e04", MODE="0666", GROUP="plugdev"' | 
 
 check usb debugging on true on device
 now can see
+
+## netcore en fedora 32
+
+sudo dnf install aspnetcore-runtime-3.1-3.1.1 dotnet-sdk-3.1
+
+
+npm i -g semantic-git-commit-cli
+
+go get github.com/nishanths/license
+
+
+
+## gp firmar commits
+
+gpg --list-keys
+
+gpg --full-generate-key
+
+git config --global user.signingkey <idkey>
+
+git config --global user.signingkey ->  si el valor esta vacio no hay configuracion
+
+como ver la signature en mi formato de log / mi git lg
+
+
+
+sudo apt-get install netselect-apt
+
+sudo netselect-apt
+
+genera un source list que se copia a
