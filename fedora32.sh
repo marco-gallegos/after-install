@@ -4,10 +4,8 @@
 * @Date   2020-01-01
 * @Update 2021-01-14
 * @Descripcion 
-  proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
+    proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 '
-#echo "argumento 1 de ejecucion de script"
-#echo $1
 
 # qemu
 # sudo dnf -y install bridge-utils libvirt virt-install qemu-kvm
@@ -29,14 +27,17 @@ aviso() {
 }
 
 # revisiones preliminares
-$val_zenity=$(zenity --version)
-$val_stow=$(stow --version)
+val_zenity=$(zenity --version)
+val_stow=$(stow --version)
 #instalaciones necesarias
 if [[ ! $val_stow ]]; then
   echo $sudo_pass | sudo -S dnf install stow -y
   aviso "se instalo stow" true
 fi
-
+if [[ ! $val_stow ]]; then
+  echo $sudo_pass | sudo -S dnf install zenity -y
+  aviso "se instalo zenity" true
+fi
 
 
 #primer paso validar que sea fedora en version 32 o superior
@@ -63,6 +64,7 @@ user=$(whoami)
 declare -A config # especificamos que config es un array
 config=(
   [ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+  [ohmybashurl]='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
 
   [vscoderepo]='[code]
 name=Visual Studio Code
@@ -91,11 +93,21 @@ gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
   [composerbinpath]="export PATH=\$PATH:/home/$user/.config/composer/vendor/bin"
 )
 
-sudo_pass=$(zenity --password --title="contraseña sudo")
-if [[ ! $sudo_pass ]]; then
-  aviso "necesito el pasword de sudo" true
-  exit
+
+if [[ $1 ]]; then
+  read -sp 'write your password: ' sudo_pass
+  if [[ ! $sudo_pass ]]; then
+    aviso "necesito el pasword de sudo" true
+    exit
+  fi
+else
+  sudo_pass=$(zenity --password --title="contraseña sudo")
+  if [[ ! $sudo_pass ]]; then
+    aviso "necesito el pasword de sudo" true
+    exit
+  fi
 fi
+
 
 # solo ejecutamos rpm -qa 1 vez por que es lento lo mandamos a un archivo y luego solo hacemos grep a este
 if [ -f "${config[rpmqafile]}" ];then
@@ -119,7 +131,6 @@ val_pythondevel=$(grep "python3-devel" ${config[rpmqafile]})
 # aplicaciones/etc que se deben instalar
 #val_zsh=$(zsh --version)
 #val_oh_my_zsh=$(echo $ZSH)
-# TODO testear
 val_oh_my_bash=$(ls ~/.oh-my-bash/)
 val_python=$(python --version)
 val_pip=$(pip -V)
@@ -151,15 +162,21 @@ val_snap=$(snap --version)
 val_flatpak=$(flatpak --version)
 
 # instalamos todo aquello necesario
-if [[ ! $val_git ]]; then
-  echo $sudo_pass | sudo -S dnf install git gitflow -y
-  aviso "Git se ha instalado" true
+if [[ ! $val_pythondevel ]]; then
+  echo $sudo_pass | sudo -S dnf install python3-devel -y
+  aviso "python3 devel is installed" true
 fi
 
-#if [[ ! $val_oh_my_zsh ]]; then
-#  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-#  aviso "se ha instalado oh my zsh" true
-#fi
+if [[ ! $val_git ]]; then
+  echo $sudo_pass | sudo -S dnf install git -y
+  echo $sudo_pass | sudo -S dnf install gitflow -y
+  aviso "Git is installed" true
+fi
+
+if [[ ! $val_oh_my_bash ]]; then
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmybashurl]})"
+  aviso "oh my bash is installed" true
+fi
 
 if [[ ! $val_pip || ! $val_python ]]; then
   echo $sudo_pass | sudo -S dnf install python-pip -y
@@ -172,13 +189,13 @@ if [[ ! $val_snap ]]; then
   echo $sudo_pass | sudo -S ln -s /var/lib/snapd/snap /snap
   echo $sudo_pass | sudo -S systemctl enable snapd --now
   echo $sudo_pass | sudo -S sed -i '$a export PATH=$PATH:/var/lib/snapd/snap/bin' /etc/profile
-  aviso "Se instalo Snap" true
+  aviso "Snap is installed" true
 fi
 
 if [[ ! $val_flatpak ]]; then
   # https://developer.fedoraproject.org/deployment/flatpak/flatpak-install.html
   echo $sudo_pass | sudo -S dnf install flatpak -y
-  aviso "Flatpak se instalo" true
+  aviso "Flatpak is installed" true
 fi
 
 if [[ ! $val_code ]]; then
@@ -191,7 +208,7 @@ if [[ ! $val_code ]]; then
   echo $sudo_pass | sudo -S echo "${config[vscoderepo]}" > ${config[vscodefilename]}
   echo $sudo_pass | sudo -S mv ${config[vscodefilename]} "${config[repopath]}${config[vscodefilename]}"
   echo $sudo_pass | sudo -S dnf install code -y
-  aviso "VsCode se ha instalado" true
+  aviso "VsCode is installed" true
 fi
 
 if [[ ! $val_rmpfusion_free ]]; then
@@ -210,8 +227,8 @@ fi
 
 if [[ ! $val_php ]]; then
   # https://rpmfusion.org/Configuration
-  echo $sudo_pass | sudo -S dnf -y install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
-  aviso "PHP se ha instalado" true
+  echo $sudo_pass | sudo -S dnf -y install php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
+  aviso "PHP is installed" true
 fi
 
 if [[ ! $val_codium ]]; then
@@ -228,14 +245,16 @@ if [[ ! $val_codium ]]; then
 fi
 
 if [[ ! $val_composer ]]; then
-  # https://rpmfusion.org/Configuration
-  echo $sudo_pass | sudo -S dnf -y install composer
-  existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
-  if [[ ! $existe_path ]]; then
-    echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
-  fi
-  source /etc/profile
-  aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+	echo $sudo_pass | sudo php composer-setup.php --install-dir=/bin --filename=composer
+	php -r "unlink('composer-setup.php');"
+	
+	existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
+	if [[ ! $existe_path ]]; then
+		echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
+	fi
+	source /etc/profile
+  aviso "Composer is installed" true
 fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
