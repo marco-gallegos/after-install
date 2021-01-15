@@ -5,9 +5,20 @@
 @Descripcion
 	proveer instalaciones basicas para raspbian 10 como servidor
 '
+#funciones globales
+aviso(){
+	echo $1
+}
+
+read -sp 'enter the sudo password:' sudo_pass
+echo ""
+if [[ ! $sudo_pass ]]; then
+  aviso "necesito el pasword de sudo"
+  exit
+fi
 
 # revisiones preliminares
-$val_stow=$(stow --version)
+val_stow=$(stow --version)
 #instalaciones necesarias
 if [[ ! $val_stow ]]; then
 	echo $sudo_pass | sudo apt install stow -y
@@ -44,12 +55,6 @@ config=(
 	[rpmqafile]='rpmqa.txt'
 	[composerbinpath]="export PATH=\$PATH:/home/$user/.config/composer/vendor/bin"
 )
-
-#sudo_pass=$(zenity --password --title="contraseña sudo")
-#if [[ ! $sudo_pass ]]; then
-#  aviso "necesito el pasword de sudo" true
-#  exit
-#fi
 
 # solo ejecutamos rpm -qa 1 vez por que es lento lo mandamos a un archivo y luego solo hacemos grep a este
 #if [ -f "${config[rpmqafile]}" ];then
@@ -155,146 +160,20 @@ if [[ ! $val_flutter ]];then
 fi
 
 # eliminamos el archivo
-if [ -f "${config[rpmqafile]}" ];then
-	echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
+#if [ -f "${config[rpmqafile]}" ];then
+#	echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
+#fi
+
+if [[ $1 ]]; then
+	case $1 in
+		"update" )
+			echo $sudo_pass | sudo apt upgrade -y --refresh
+			echo $sudo_pass | sudo pip install --upgrade pip
+		;;
+
+		*)
+			echo "opcion invalida: $1"
+	esac
 fi
 
-opcion="basura :v"
-
-
-case $opcion in
-	"update" )
-		echo $sudo_pass | sudo apt upgrade -y --refresh
-		echo $sudo_pass | sudo pip install --upgrade pip
-	;;
-#	
-#	"Actualizar++" )
-#	echo $sudo_pass | sudo apt clean all && sudo apt upgrade -y --refresh
-#	echo $suco_pass | sudo -S snap refresh 
-#	echo $sudo_pass | sudo -S flatpak update
-#	echo $sudo_pass | sudo -S npm update -g
-#	composer global update
-#	echo $sudo_pass | sudo -S pip install --upgrade pip
-#	#sh $ZSH/tools/upgrade.sh
-#	;;
-#
-#	"Migracion" )
-#	echo "WIP"
-#	exit
-#	directorio_destino=$(zenity --file-selection --directory --title="Directorio de #destino para el respaldo")
-#	directorio_destino+="/"
-#	directorio_destino+=$host_name
-#	mkdir $directorio_destino
-#	directorio_destino+="/"
-#	directorio_destino+=$user
-#	mkdir $directorio_destino
-#	cp -R $HOME/.ssh $directorio_destino
-#	echo $sudo_pass | sudo -S 7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on #$directorio_destino/http.7z /srv/http
-#	for x in `ls $HOME`;
-#	do
-#	cp -R $HOME/$x $directorio_destino;
-#	done
-#	aviso "respaldo terminado"
-#	  ;;
-#
-#	"Limpiar" )
-#	echo $sudo_pass | sudo apt clean all
-#	  ;;
-#
-#	"Software" )
-#	echo $sudo_pass | sudo apt install -y stacer vlc
-#	bash -c "$(wget -q -O - https://linux.kite.com/dls/linux/current)"
-#	  ;;
-#
-#	"IDES" )
-#	aviso "No implementado" true
-#	exit
-#	echo $sudo_pass | sudo apt install 
-#	  ;;
-#
-#
-#	"Swappiness" )
-#	exit
-#	if [[ -e "/etc/sysctl.d/99-sysctl.conf" ]]; then
-#	  echo existe
-#	else
-#	  echo creando
-#	  echo $sudo_pass | sudo -S touch /etc/sysctl.d/99-sysctl.conf
-#	fi
-#	val_swap=$(grep "vm.swappines" /etc/sysctl.d/99-sysctl.conf )
-#	echo $sudo_pass | sudo -S cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.#old
-#
-#	echo dame el valor para asignar
-#	read val_asignar_swap
-#
-#	if [[ ${val_swap[0]} == "" ]]; then
-#	  echo $sudo_pass | sudo -s "echo vm.swappiness=$val_asignar_swap >> /etc/sysctl.d/#99-sysctl.conf"
-#	else
-#	  echo $sudo_pass | sudo -S sed -i "s%${val_swap[0]}%vm.#swappiness=$val_asignar_swap%g" /etc/sysctl.d/99-sysctl.conf
-#	fi
-#	  ;;
-#
-#
-#	"Complementos ATOM" )
-#	exit
-#	if [[ $val_apm == "---- No tienes instalado atom -----" ]]; then
-#	  echo instalare atom
-#	  echo $sudo_pass | sudo -S pacman -S --noconfirm atom
-#	fi
-#	echo $sudo_pass | sudo -S -u $user apm install color-picker emmet linter #linter-cppcheck file-icons atom-ternjs atom-bootstrap3 pigments highlight-selected #open-recent autocomplete-python platformio-ide-terminal atom-dark-fusion-syntax #atom-material-ui seti-syntax linter-ui-default ide-php atom-ide-ui
-#	  ;;
-#
-#
-#	"Cargar SSH" )
-#	exit
-#	if [[ -e "~/.ssh/id_rsa" ]]; then
-#	  echo cambiando permiso a tu llave
-#	  chmod 700 ~/.ssh/id_rsa
-#	  ssh-add ~/.ssh/id_rsa
-#	else
-#	  echo no tienes una llave ssh debes generarla o copiar la que tenias en tu home
-#	fi
-#	  ;;
-#
-#	"Paquetes Huerfanos" )
-#	exit
-#	echo $sudo_pass | sudo -S pacman -Rnsc $(pacman -Qtdq)
-#	;;
-#
-#	"Configurar git")
-#	echo "cual es tu nombre : "
-#	read nombre_git
-#	echo "cual es tu email  : "
-#	read email_git
-#	echo "editor para los commits : "
-#	read editor_git""
-#	git config --global user.name "$nombre_git"
-#	git config --global user.email "$email_git"
-#	git config --global core.editor "$editor_git"
-#	git config color.ui true
-#	;;
-#
-#	"Utilidades DE")
-#	exit 0
-#	if [[ $desktop_envirenment -eq "xfce" ]]; then
-#	  echo $sudo_pass | sudo apt install xfce4-xkb-plugin xfce4-screensaver #xfce4-panel-profiles xfce-theme-manager thunar-archive-plugin
-#	fi
-#
-#	if [[ $desktop_envirenment -eq "gnome" ]]; then
-#	  aviso "No uses Gnome" true
-#	fi
-#
-#	;;
-#
-#	"Temas, Iconos")
-#	  aviso "Aun no implementado" true
-#	;;
-#
-#	"Bootsplash" )
-#	exit
-#	;;
-esac
-
-done
-
-echo "saliendo del script"
+aviso "saliendo del script"
