@@ -4,7 +4,7 @@
 * @Date   2020-01-01
 * @Update 2021-01-14
 * @Descripcion 
-    proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
+*   proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
 '
 
 # qemu
@@ -96,6 +96,7 @@ gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg'
 
 if [[ $1 ]]; then
   read -sp 'write your password: ' sudo_pass
+  echo '\n'
   if [[ ! $sudo_pass ]]; then
     aviso "necesito el pasword de sudo" true
     exit
@@ -146,8 +147,9 @@ val_npm=$(npm --version)
 val_grubby=$(grubby --help)
 
 # aplicaciones/librerias de python
+# TODO use pip tools with a requirements.in and requirements.in
 val_pip_tools=$(pip show pip-tools)
-val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
+#val_spyder=$(pip show spyder) # necesitas instalar libqtxdg
 
 # probando
 val_docker=$(docker --version)
@@ -309,6 +311,7 @@ Updatefull(){
   echo $suco_pass | sudo -S snap refresh 
   echo $sudo_pass | sudo -S flatpak update -y 
   echo $sudo_pass | sudo -S npm update -g
+  composer self-update -n -vv
   composer global update
   echo $sudo_pass | sudo -S pip install --upgrade pip
   #sh $ZSH/tools/upgrade.sh
