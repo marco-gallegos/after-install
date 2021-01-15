@@ -145,7 +145,7 @@ fi
 if [[ ! $val_docker ]];then
 	echo $sudo_pass | sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 	echo $sudo_pass | sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-	echo $sudo_pass | sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/debian$(lsb_release -cs)stable"
+	echo $sudo_pass | sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 	echo $sudo_pass | sudo apt update -y
 	echo $sudo_pass | sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
 	echo $sudo_pass | sudo groupadd docker
