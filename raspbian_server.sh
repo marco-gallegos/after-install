@@ -6,6 +6,15 @@
 	proveer instalaciones basicas para raspbian 10 como servidor
 '
 
+# revisiones preliminares
+$val_stow=$(stow --version)
+#instalaciones necesarias
+if [[ ! $val_stow ]]; then
+	echo $sudo_pass | sudo apt install stow -y
+	aviso "se instalo stow" true
+fi
+
+
 #primer paso validar que sea fedora en version 32 o superior
 distro_text=$(grep "^NAME" /etc/os-release)
 version_text=$(grep "^VERSION_ID" /etc/os-release)
@@ -16,7 +25,7 @@ read -ra version_arr <<< "$version_text"
 
 distro_name=${distro_arr[1]}
 distro_version=${version_arr[1]}
-fedora_version_rpm=$(rpm -E %fedora)
+#fedora_version_rpm=$(rpm -E %fedora)
 desktop_envirenment=$DESKTOP_SESSION # variable de entorno
 
 #if [[ $distro_name != "Fedora" && $distro_name != "fedora" ]] || [[ $distro_version < 32 ]]#; then
@@ -69,6 +78,7 @@ val_php=$(php --version)
 val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
+val_pm2=$(pm2 --version)
 
 # aplicaciones/librerias de python
 val_pip_tools=$(pip3 show pip-tools)
@@ -105,19 +115,21 @@ fi
 
 if [[ ! $val_php ]]; then
 	# https://rpmfusion.org/Configuration
-	echo $sudo_pass | sudo apt -y install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json
+	echo $sudo_pass | sudo apt -y install php php-cli php-fpm php-mysql php-zip php-dev php-gd php-mbstring php-curl php-xml php-pear php-bcmath php-json
 	aviso "PHP se ha instalado" true
 fi
 
 if [[ ! $val_composer ]]; then
-	# https://rpmfusion.org/Configuration
-	echo $sudo_pass | sudo apt -y install composer
+	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+	echo $sudo_pass | sudo php composer-setup.php --install-dir=/bin --filename=composer
+	php -r "unlink('composer-setup.php');"
+	
 	existe_path=$(grep "${config[composerbinpath]}" /etc/profile)
 	if [[ ! $existe_path ]]; then
 		echo $sudo_pass | sudo -S sed -i "\$a ${config[composerbinpath]}" /etc/profile
 	fi
 	source /etc/profile
-	aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados" true
+	aviso "Composer se ha instalado cierra y abre tu terminal para ver los cambios reflejados"
 fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
@@ -127,7 +139,7 @@ fi
 
 if [[ ! $val_docker ]];then
 	echo $sudo_pass | sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-	echo $sudo_pass | curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+	echo $sudo_pass | sudo curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 	echo $sudo_pass | sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/debian$(lsb_release -cs)stable"
 	echo $sudo_pass | sudo apt update -y
 	echo $sudo_pass | sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
@@ -149,35 +161,12 @@ fi
 
 opcion="basura :v"
 
-#while [[ $opcion != "" ]]; do
-#  opcion=$(zenity --list\
-#	--title="Post install on $host_name | $desktop_envirenment | $user SELinux #$val_enforce"\
-#	--radiolist\
-#	--width="800"\
-#	--height="590"\
-#	--column="" --column="Opcion" --column="Descripcion" --column="Info"\
-#	TRUE   "Actualizar"          "Actualizar el sistema (solo dnf)#"                                            "-"\
-#	FALSE  "Actualizar++"        "Actualizacion agresiva \n (dnf con limpieza de cache, #snap, flatpak, etc)"   "-"\
-#	FALSE  "Pip Reqirements"     "Sincronizar pip reqirements"   "-"\
-#	FALSE  "Migracion"           "Respaldo Pre formateo de #PC"                                                 "-"\
-#	FALSE  "Limpiar"             "Limpar la cache de #pacman"                                                   "-"\
-#	FALSE  "Software"            "Software basico #"                                                            "-"\
-#	FALSE  "IDES"                "IDE's y editores que uso para #programar"                                     "-"\
-#	FALSE  "Swappiness"          "Editar el uso de la #swap"                                                    "$val_swappines"\
-#	FALSE  "Complementos ATOM"   "Complementos basicos para el editor #atom"                                    "${val_atom[0]}"\
-#	FALSE  "Cargar SSH"          "Reutilizar tu clave ssh copiada en ~/.#ssh"                                   "-"\
-#	FALSE  "Paquetes Huerfanos"  "Eliminar paquetes ya no requeredos del #sistema"                              "-"\
-#	FALSE  "Configurar git"      "Configurar nombre,email y editor para #git"                                   "-"\
-#	FALSE  "Bootsplash"          "Eliminar el bootsplash solo #texto"                                           "-"\
-#	FALSE  "Utilidades DE"       "Utilidades Extra para tu Entorno de #escritorio"                              "$desktop_envirenment"
-#	FALSE  "Microzoa"            "Instalar tema #Microzoa"                                                      ""
-#  )
-#
-#  case $opcion in
-#	"Actualizar" )
-#	echo $sudo_pass | sudo apt upgrade -y --refresh
-#	echo $sudo_pass | sudo -S pip install --upgrade pip
-#	;;
+
+case $opcion in
+	"update" )
+		echo $sudo_pass | sudo apt upgrade -y --refresh
+		echo $sudo_pass | sudo pip install --upgrade pip
+	;;
 #	
 #	"Actualizar++" )
 #	echo $sudo_pass | sudo apt clean all && sudo apt upgrade -y --refresh
@@ -304,8 +293,8 @@ opcion="basura :v"
 #	"Bootsplash" )
 #	exit
 #	;;
-#  esac
-#
-#done
+esac
+
+done
 
 echo "saliendo del script"
