@@ -1,6 +1,7 @@
 [user]
 	email = ma_galeza@hotmail.com
 	name = marco-gallegos
+	signingkey = 7D0F8B5F4B244D04351F27C284FC2636B1488B18
 [core]
 	editor = nvim
 [credential]
