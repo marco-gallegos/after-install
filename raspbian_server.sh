@@ -50,6 +50,7 @@ user=$(whoami)
 
 declare -A config # especificamos que config es un array
 config=(
+	[ohmybashurl]='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
 	[flutterurl]='https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.12.13+hotfix.5-stable.tar.xz'
 
 	[rpmqafile]='rpmqa.txt'
@@ -108,10 +109,10 @@ if [[ ! $val_git ]]; then
 	aviso "Git se ha instalado" true
 fi
 
-#if [[ ! $val_oh_my_zsh ]]; then
-#  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmyzshurl]})"
-#  aviso "se ha instalado oh my zsh" true
-#fi
+if [[ ! $val_oh_my_bash ]]; then
+  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmybashurl]})"
+  aviso "oh my bash is installed" true
+fi
 
 if [[ ! $val_pip || ! $val_python ]]; then
 	echo $sudo_pass | sudo -S apt install python3-pip -y
@@ -120,8 +121,8 @@ fi
 
 if [[ ! $val_php ]]; then
 	# https://rpmfusion.org/Configuration
-	echo $sudo_pass | sudo apt -y install php php-cli php-fpm php-mysql php-zip php-dev php-gd php-mbstring php-curl php-xml php-pear php-bcmath php-json
-	aviso "PHP se ha instalado" true
+	echo $sudo_pass | sudo apt -y install php-cli php-fpm php-mysql php-zip php-dev php-gd php-mbstring php-curl php-xml php-pear php-bcmath php-json
+	aviso "PHP is installed" true
 fi
 
 if [[ ! $val_composer ]]; then
@@ -167,8 +168,9 @@ fi
 if [[ $1 ]]; then
 	case $1 in
 		"update" )
-			echo $sudo_pass | sudo apt upgrade -y --refresh
-			echo $sudo_pass | sudo pip install --upgrade pip
+			echo $sudo_pass | sudo apt update -y
+			echo $sudo_pass | sudo apt upgrade -y
+			echo $sudo_pass | sudo pip3 install --upgrade pip
 		;;
 
 		*)
