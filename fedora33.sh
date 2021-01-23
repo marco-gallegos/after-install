@@ -1,10 +1,10 @@
 #!/bin/bash
 : '
 * @Author Marco A Gallegos
-* @Date   2020-01-01
-* @Update 2021-01-14
+* @Date   2021-01-23
+* @Update 2021-01-23
 * @Descripcion 
-*   proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora
+*   proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora 
 '
 # funciones auxiliares globales
 read_conf_var(){
