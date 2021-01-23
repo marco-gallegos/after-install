@@ -10,7 +10,10 @@ Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun
 
 ## To Do
 
-- [ ] rsync backups
+- [ ] cli utils
+  - [ ] license
+  - [ ] gitignore
+- [ ] git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 
 
 ###### Soporte para : 
@@ -45,7 +48,6 @@ stow -Dv -t ~ bash
 ## recursos
 
 7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z origen
-
 
 
 ## react native install
@@ -86,9 +88,6 @@ now can see
 ## netcore en fedora 32
 
 sudo dnf install aspnetcore-runtime-3.1-3.1.1 dotnet-sdk-3.1
-
-
-npm i -g semantic-git-commit-cli
 
 go get github.com/nishanths/license
 
