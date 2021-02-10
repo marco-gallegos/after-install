@@ -5,11 +5,22 @@
 * @Update 2021-01-23
 * @Descripcion 
 *   proveer opciones comunes para aligerar/automatizar la post instalacion o migracion de sistema operativo en este caso fedora 
+* sudo dnf install fira-code-fonts
 '
+#variables globales
+separador="==============================================================================================="
+
 # funciones auxiliares globales
 read_conf_var(){
-    VAR=$(grep $1 config.ini | cut -d '=' -f2)
-    echo $VAR;
+  VAR=$(grep $1 config.ini | cut -d '=' -f2)
+  echo $VAR;
+}
+
+# log
+log_echo(){
+  echo $separador
+  echo $1
+  echo $separador
 }
 
 # auxiliar para mostrar tanto notificaciones push como logs
@@ -280,21 +291,30 @@ Update(){
 # funcion actualizacion completa
 Updatefull(){
   # Todo Revisar complementos
+  log_echo "updating dnf ..."
   echo $sudo_pass | sudo -S dnf clean all
   echo $sudo_pass | sudo -S dnf upgrade -y --refresh
+  echo $sudo_pass | sudo -S dnf clean packages
+  log_echo "updating snap ..."
   echo $suco_pass | sudo -S snap refresh 
-  echo $sudo_pass | sudo -S flatpak update -y 
+  log_echo "updating flatpak ..."
+  echo $sudo_pass | sudo -S flatpak update -y
+  log_echo "updating npm ..."
+  echo $sudo_pass | sudo -S npm install -g npm
   echo $sudo_pass | sudo -S npm update -g
-  composer self-update -n -vv
+  log_echo "updating composer ..."
+  echo $sudo_pass | sudo -S composer self-update -n -vv
   composer global update
+  log_echo "updating pip ..."
   echo $sudo_pass | sudo -S pip install --upgrade pip
-  if [[ $val_oh_my_bash ]]; then
-    upgrade_oh_my_bash
-    cd
-  fi
   if [[ $val_pip_tools && -f $HOME/requirements.in ]]; then
     pip-compile $HOME/requirements.in -v
     echo $sudo_pass | sudo -S pip install -r $HOME/requirements.txt --upgrade
+  fi
+  if [[ $val_oh_my_bash ]]; then
+    log_echo "updating oh my bash ..."
+    upgrade_oh_my_bash
+    cd
   fi
 }
 

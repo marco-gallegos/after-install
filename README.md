@@ -112,3 +112,30 @@ sudo apt-get install netselect-apt
 sudo netselect-apt
 
 genera un source list que se copia a
+
+
+## raspbian mongo
+
+wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+
+echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+
+sudo apt update
+
+
+sudo apt install -y mongodb-org=4.2 mongodb-org-server=4.2 mongodb-org-shell=4.2 mongodb-org-mongos=4.2 mongodb-org-tools=4.2
+
+no corre por falta de libc6 mas nueva usar docker
+https://www.bmc.com/blogs/mongodb-docker-container/
+
+sudo apt install r-base-core r-base
+
+
+## mongo fedora
+
+sudo echo "[mongodb-org-4.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
