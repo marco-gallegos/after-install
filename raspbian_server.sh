@@ -110,8 +110,8 @@ if [[ ! $val_git ]]; then
 fi
 
 if [[ ! $val_oh_my_bash ]]; then
-  echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmybashurl]})"
-  aviso "oh my bash is installed" true
+	echo $sudo_pass | sh -c "$(curl -fsSL ${config[ohmybashurl]})"
+	aviso "oh my bash is installed" true
 fi
 
 if [[ ! $val_pip || ! $val_python ]]; then
