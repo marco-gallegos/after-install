@@ -1,36 +1,39 @@
-#!/usr/bin/ bash
+#!/bin/zsh
 : '
 @Author Marco A Gallegos
 @Date 2021-11-28
 @Descripcion
 	proveer instalaciones basicas para mac osx monterey
 '
-read -sp 'enter the sudo password:' sudo_pass
+echo 'enter the sudo password:'
+read sudo_pass
 echo ""
+
 if [[ ! $sudo_pass ]]; then
-    aviso "necesito el pasword de sudo"
+    echo "necesito el pasword de sudo"
     exit
 fi
 
 user=$(whoami)
 
-declare -A config # especificamos que config es un array
-config=(
-	[ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
-	[homebrewurl]='https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh'
-)
+#declare -A config # especificamos que config es un array
+#config=(
+#	[ohmyzshurl]='https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+#	[homebrewurl]='https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh'
+#)
 
 
 val_git=$(git --version)
-val_brew=$(git --version)
+val_brew=$(brew --version)
 val_iterm=$(git --version)
-val_oh_my_zsh=$(ls ~/.oh-my-bash/)
+val_oh_my_zsh=$(ls ~/.oh-my-zsh/)
 val_python=$(python3 --version)
 val_pip=$(pip3 -V)
 val_php=$(php --version)
 val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
+val_fuck=$(fuck --version)
 
 
 #to python development
@@ -43,7 +46,7 @@ val_android_studio=$(flutter --version)
 # /bin/bash -c "$(curl -fsSL //url//)"
 
 if [[ ! $val_git ]]; then
-	echo $sudo_pass | sudo -S apt install git gitflow -y
+	brew install git git-flow
 	aviso "Git se ha instalado" true
 fi
 
@@ -55,10 +58,17 @@ if [[ $1 ]]; then
 	case $1 in
 		"update" )
 			brew update
-			sudo brew upgrade
-			echo $sudo_pass | sudo pip3 install --upgrade pip 
-            upgrade_oh_my_zsh
+			brew upgrade
+			pip3 install --upgrade pip
             git -C ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k pull
+			
+			$HOME/.oh-my-zsh/tools/upgrade.sh
+			#cleanup
+			brew cleanup --prune=all -v
+		;;
+
+		"delete_node_modules" )
+			find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
 		;;
 
 		*)

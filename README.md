@@ -1,6 +1,6 @@
 # After Innstall
 
-Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun y 
+Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun y configuracion
 
 ## Dependencias
 
@@ -10,9 +10,6 @@ Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun
 
 ## To Do
 
-- [ ] cli utils
-  - [ ] license
-  - [ ] gitignore
 - [ ] git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 
 
@@ -21,7 +18,17 @@ Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun
 * manjaro / arch linux
 * fedora
 * raspbian
+* debian
+* mac
 
+##### algunas herramientas y cli
+
+* [the fuck](https://github.com/nvbn/thefuck)
+* neovim
+  * vim plug
+* [docker pretty ps](https://github.com/politeauthority/docker-pretty-ps)
+* [commitcli](https://link)
+* [gibo](https://github.com/simonwhitaker/gibo)
 
 ## dotfiles
 
