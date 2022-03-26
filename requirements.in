@@ -1,0 +1,11 @@
+# @Author   Marco A. Gallegos
+# @Date     2022/03/26
+# @Update   2022/03/26
+# @Description
+#   Global pip utilities to consider on the system
+#   pip-compile -U
+#   pip install -r requirements.txt -U
+
+commitcli
+mycli
+pip-tools
