@@ -29,6 +29,9 @@ Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun
 * [docker pretty ps](https://github.com/politeauthority/docker-pretty-ps)
 * [commitcli](https://link)
 * [gibo](https://github.com/simonwhitaker/gibo)
+* [npmcheckupdates](https://github.com/raineorshine/npm-check-updates) npm install -g npm-check-updates
+* brew install planetscale/tap/pscale
+* 
 
 ## dotfiles
 

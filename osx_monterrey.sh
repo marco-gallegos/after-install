@@ -8,7 +8,7 @@
 # system updates functions
 system_updates() {
 	brew update
-	brew upgrade
+	brew upgrade --greedy #greedy to update cask with non numerical version like 'latest' or 'master'
 	pip install --upgrade pip
 	git -C ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k pull
 	
