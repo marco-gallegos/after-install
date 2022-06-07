@@ -1,5 +1,5 @@
 " this is my latest version
-" TODO: check older confid '.config/init....'
+" TODO: check older config '.config/init....
 " NOTES
 " pip install pynvim
 
@@ -13,9 +13,13 @@ set encoding=utf-8
 set showmatch
 set relativenumber
 set hidden
+
+"
 set autoindent
 set smartindent
 
+
+" autocmd BufEnter * lcd %:p:h
 
 call plug#begin('~/.vim/plugged')
 " Temas
@@ -52,6 +56,39 @@ Plug 'mattn/emmet-vim'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'ryanoasis/vim-devicons'
 
+"" Vim-Session
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-session'
+
+"" Snippets
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+
+" languages ================================================================
+
+" go
+"" Go Lang Bundle
+Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
+
+" javascript
+"" Javascript Bundle
+Plug 'jelera/vim-javascript-syntax'
+
+" php
+"" PHP Bundle
+Plug 'phpactor/phpactor', {'for': 'php', 'do': 'composer install --no-dev -o'}
+Plug 'stephpy/vim-php-cs-fixer'
+
+" python
+"" Python Bundle
+Plug 'davidhalter/jedi-vim'
+Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
+
+" typescript
+Plug 'leafgarland/typescript-vim'
+Plug 'HerringtonDarkholme/yats.vim'
+
+
 
 call plug#end()
 " ======================================================
@@ -60,7 +97,7 @@ call plug#end()
 let mapleader = " "
 
 " easymotion plugin hotkey 'space' + 's' -> search 2 chars in all file
-nmap <Leader>s <Plug>(easymotion-s2)
+nmap <Leader>s <Plug>(easymotion-s7)
 
 
 " <CR> is a enter
@@ -82,8 +119,16 @@ nmap <C-F> :Telescope live_grep <CR>
 
 
 " buffers next and before
-nnoremap <C-N> :bnext<CR>
-nnoremap <C-B> :bprev<CR>
+nmap <C-N> :bnext<CR>
+nmap <C-B> :bprev<CR>
+nmap <Leader>bl :buffers<CR>
+nmap <Leader>bd :bd<CR> " delete current buffer
+nmap <Leader>bu :bw " unload buffers
+nmap <Leader>b :buffer  " go to beffer
+
+" sessions -> this uses the xolox/session
+nmap <Leader>ss :SaveSession<CR>
+nmap <Leader>so :OpenSession<CR>
 
 " COC code navigation.
 nmap <silent> gd <Plug>(coc-definition)
@@ -96,7 +141,10 @@ nmap <F2> <Plug>(coc-rename)
 nmap <Leader>wq :wq!<CR>
 nmap <Leader>w :w<CR>
 nmap <Leader>q :q!<CR>
+nmap <Leader>qq :qa!<CR> " quit all without saving
 
+
+" copy current file path
 nnoremap <Leader>cp :let @*=expand("%")<CR>
 
 " ========================================================
