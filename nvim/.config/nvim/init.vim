@@ -1,3 +1,11 @@
+" new config to use vim and nvim with the same config
+set runtimepath^=~/.vim runtimepath^=~/.vim/after
+let &packpath = &runtimepath
+source ~/.vimrc
+
+
+"""" old config from here ==============>>
+
 " vim-bootstrap 2020-10-22 16:52:57
 
 "*****************************************************************************
