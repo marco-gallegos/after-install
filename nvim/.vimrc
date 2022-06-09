@@ -14,9 +14,14 @@ set showmatch
 set relativenumber
 set hidden
 
-"
+" identation
 set autoindent
 set smartindent
+
+" new
+set tabstop=4
+set shiftwidth=4
+set expandtab
 
 
 " autocmd BufEnter * lcd %:p:h
@@ -122,12 +127,15 @@ nmap <C-F> :Telescope live_grep <CR>
 nmap <C-N> :bnext<CR>
 nmap <C-B> :bprev<CR>
 nmap <Leader>bl :buffers<CR>
-nmap <Leader>bd :bd<CR> " delete current buffer
-nmap <Leader>bu :bw " unload buffers
-nmap <Leader>b :buffer  " go to beffer
-
+" delete current buffer
+nmap <Leader>bd :bd!<CR> 
+" unload buffer
+nmap <Leader>bu :bw 
+" go to beffer
+nmap <Leader>b :buffer 
 " sessions -> this uses the xolox/session
 nmap <Leader>ss :SaveSession<CR>
+nmap <Leader>sns :SaveSession 
 nmap <Leader>so :OpenSession<CR>
 
 " COC code navigation.
@@ -141,7 +149,9 @@ nmap <F2> <Plug>(coc-rename)
 nmap <Leader>wq :wq!<CR>
 nmap <Leader>w :w<CR>
 nmap <Leader>q :q!<CR>
-nmap <Leader>qq :qa!<CR> " quit all without saving
+" quit all without saving
+nmap <Leader>qq :qa!<CR>
+
 
 
 " copy current file path
