@@ -258,7 +258,16 @@ noremap <silent> <s-down> :call <SID>swap_down()<CR>
 
 let NERDTreeShowHidden=1
 let g:NERDTreeQuitOnOpen = 0
-let g:NERDTreeIgnore = ['^node_modules$']
+let g:NERDTreeIgnore = ['^node_modules$', '\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__']
+
+" testing config
+let g:NERDTreeChDirMode=2
+let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
+let g:NERDTreeShowBookmarks=1
+let g:nerdtree_tabs_focus_on_files=1
+let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
+let g:NERDTreeWinSize = 40
+let g:NERDTreeWinPos = "right"
 
 " sync open file with NERDTree
 " " Check if NERDTree is open or active
