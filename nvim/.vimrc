@@ -57,12 +57,6 @@ Plug 'christoomey/vim-tmux-navigator'
 Plug 'itchyny/lightline.vim'
 
 
-" search plugins to get a better experience
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-
 "indentation line
 Plug 'yggdroot/indentline'
 
@@ -82,7 +76,7 @@ Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 
 "" Snippets
-Plug 'SirVer/ultisnips'
+" Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 
 " languages ================================================================
@@ -268,7 +262,7 @@ let g:NERDTreeIgnore = ['^node_modules$', '\.rbc$', '\~$', '\.pyc$', '\.db$', '\
 
 " testing config
 let g:NERDTreeChDirMode=2
-let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
+let g:NERDTreeSortOrder=['^__\.py$', '\/$', '\.swp$', '\.bak$', '\~$']
 let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
 let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
@@ -296,7 +290,6 @@ endfunction
 
 " coc config
     let g:coc_global_extensions = [
-        \ 'coc-snippets',
         \ 'coc-pairs',
         \ 'coc-tsserver',
         \ 'coc-eslint', 
@@ -319,10 +312,10 @@ if exists('+termguicolors')
   set termguicolors
 endif
 
-set background=dark
-colorscheme PaperColor
+" set background=dark
+" colorscheme PaperColor
 
-" colorscheme monokai
+colorscheme monokai
 
 " set background=dark
 " colorscheme andromeda
