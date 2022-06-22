@@ -2,7 +2,10 @@
 " TODO: check older config '.config/init....
 " NOTES
 " ctrl + alt = win (cmd in mac) dot use in kitty because kitty use this hotkey
+" sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+"       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 " pip install pynvim
+" 
 
 set number
 set mouse=a
