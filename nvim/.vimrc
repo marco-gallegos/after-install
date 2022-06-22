@@ -1,6 +1,7 @@
 " this is my latest version
 " TODO: check older config '.config/init....
 " NOTES
+" ctrl + alt = win (cmd in mac) dot use in kitty because kitty use this hotkey
 " pip install pynvim
 
 set number
@@ -40,12 +41,18 @@ Plug 'scrooloose/nerdtree'
 "vim tmux navigation
 Plug 'christoomey/vim-tmux-navigator'
 
+" better navbar
+Plug 'itchyny/lightline.vim'
 
-" search plugins to get a better experience
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+if has('nvim')
+    " search plugins to get a better experience
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'nvim-telescope/telescope.nvim'
+    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+endif
 
 "indentation line
 Plug 'yggdroot/indentline'
@@ -83,6 +90,14 @@ Plug 'jelera/vim-javascript-syntax'
 "" PHP Bundle
 Plug 'phpactor/phpactor', {'for': 'php', 'do': 'composer install --no-dev -o'}
 Plug 'stephpy/vim-php-cs-fixer'
+Plug 'symfony/symfony'
+
+" optional laravel deps
+Plug 'tpope/vim-dispatch'
+Plug 'tpope/vim-projectionist'
+Plug 'noahfrederick/vim-composer'
+Plug 'noahfrederick/vim-laravel'
+
 
 " python
 "" Python Bundle
@@ -93,7 +108,8 @@ Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
 Plug 'leafgarland/typescript-vim'
 Plug 'HerringtonDarkholme/yats.vim'
 
-
+" BufOnly script
+Plug 'vim-scripts/BufOnly.vim'
 
 call plug#end()
 " ======================================================
@@ -138,12 +154,59 @@ nmap <Leader>ss :SaveSession<CR>
 nmap <Leader>sns :SaveSession 
 nmap <Leader>so :OpenSession<CR>
 
+" tab shortcuts
+nmap <Leader>tc :tabnew<CR>
+nmap <Leader>tn :tabnext<CR>
+nmap <Leader>tb :tabprevious<CR>
+nmap <Leader>tq :tabclose<CR>
+" current buffer in tab
+nmap <Leader>t :tabe %<CR>
+
+
+" ================================================================== COC
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ CheckBackspace() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
 " COC code navigation.
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 nmap <F2> <Plug>(coc-rename)
+
+" Use <c-space> to trigger completion.
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
+
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Highlight the symbol and its references when holding the cursor. TODO:check is not working
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" ====================================================================== COC END
 
 " general shortcut
 nmap <Leader>wq :wq!<CR>
@@ -152,10 +215,40 @@ nmap <Leader>q :q!<CR>
 " quit all without saving
 nmap <Leader>qq :qa!<CR>
 
-
+nnoremap <leader>vm :vertical resize +10<CR>
 
 " copy current file path
 nnoremap <Leader>cp :let @*=expand("%")<CR>
+
+" functions to make line change work with vim
+function! s:swap_lines(n1, n2)
+    let line1 = getline(a:n1)
+    let line2 = getline(a:n2)
+    call setline(a:n1, line2)
+    call setline(a:n2, line1)
+endfunction
+
+function! s:swap_up()
+    let n = line('.')
+    if n == 1
+        return
+    endif
+    call s:swap_lines(n, n - 1)
+    exec n - 1
+endfunction
+
+function! s:swap_down()
+    let n = line('.')
+    if n == line('$')
+        return
+    endif
+    call s:swap_lines(n, n + 1)
+    exec n + 1
+endfunction
+" line exchange using ctrl + shift + up or down
+noremap <silent> <s-up> :call <SID>swap_up()<CR>
+noremap <silent> <s-down> :call <SID>swap_down()<CR>
+
 
 " ========================================================
 " plugins  configuration
@@ -163,8 +256,6 @@ nnoremap <Leader>cp :let @*=expand("%")<CR>
 let NERDTreeShowHidden=1
 let g:NERDTreeQuitOnOpen = 0
 let g:NERDTreeIgnore = ['^node_modules$']
-"colorscheme codedark
-
 
 " sync open file with NERDTree
 " " Check if NERDTree is open or active
@@ -186,15 +277,16 @@ endfunction
 
 
 " coc config
-let g:coc_global_extensions = [
-  \ 'coc-snippets',
-  \ 'coc-pairs',
-  \ 'coc-tsserver',
-  \ 'coc-eslint', 
-  \ 'coc-prettier', 
-  \ 'coc-json', 
-  \ 'coc-python',
-  \ ]
+    let g:coc_global_extensions = [
+        \ 'coc-snippets',
+        \ 'coc-pairs',
+        \ 'coc-tsserver',
+        \ 'coc-eslint', 
+        \ 'coc-prettier', 
+        \ 'coc-json', 
+        \ 'coc-python',
+        \ 'coc-tabnine',
+    \ ]
 
 "let g:gruvbox_(option) = '(value)'
 colorscheme gruvbox
