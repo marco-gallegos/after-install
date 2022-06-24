@@ -5,7 +5,10 @@
 " sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
 "       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 " pip install pynvim
-" 
+"
+"on apt systems
+" sudo apt install ripgrep
+" sudo apt install fd-find
 
 set number
 set mouse=a
