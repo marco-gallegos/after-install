@@ -1,0 +1,9 @@
+# ============================================ 
+# back and front tab
+
+# Set the layout for the current tab
+layout tall
+# Set the working directory for windows in the current tab
+cd /Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
+launch --title "frontend" --hold zsh -c "npm run dev && exec zsh -i -O "
+
