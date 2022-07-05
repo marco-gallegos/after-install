@@ -5,10 +5,7 @@
 " sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
 "       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 " pip install pynvim
-"
-"on apt systems
-" sudo apt install ripgrep
-" sudo apt install fd-find
+" 
 
 set number
 set mouse=a
@@ -30,7 +27,7 @@ set expandtab
 
 " new
 set t_Co=256
-
+set paste
 
 " autocmd BufEnter * lcd %:p:h
 
@@ -57,7 +54,8 @@ Plug 'scrooloose/nerdtree'
 Plug 'christoomey/vim-tmux-navigator'
 
 " better navbar
-Plug 'itchyny/lightline.vim'
+" Plug 'itchyny/lightline.vim'
+Plug 'nvim-lualine/lualine.nvim'
 
 
 " search plugins to get a better experience
@@ -79,6 +77,13 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'mattn/emmet-vim'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plug 'ryanoasis/vim-devicons'
+" comment easy line or all selection
+Plug 'scrooloose/nerdcommenter'
+" check this
+Plug 'alvan/vim-closetag'
+Plug 'tpope/vim-surround'
+Plug 'neovim/nvim-lspconfig'
+" ts npm install -g typescript typescript-language-server
 
 "" Vim-Session
 Plug 'xolox/vim-misc'
@@ -144,6 +149,10 @@ nmap <Leader>nt :NERDTreeToggle<CR>
 "autocmd BufWrite * :NERDTreeFind<cr>
 "autocmd BufRead * :NERDTreeFind<cr>
 "autocmd BufEnter * :NERDTreeFind<cr>
+" map on visualmode
+vmap <C-/> <plug>NERDCommenterToggle
+" map on normal
+nmap <C-/> <plug>NERDCommenterToggle
 
 
 " ctrl + P | F
@@ -215,10 +224,29 @@ function! ShowDocumentation()
   endif
 endfunction
 
+" show hover doc using lsp
+nnoremap <silent>k :Lspsaga hover_doc<CR>
+inoremap <silent> <C-k> <Cmd>Lspsaga signature_help<CR>
+
+
 " Highlight the symbol and its references when holding the cursor. TODO:check is not working
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " ====================================================================== COC END
+
+" ====================================================================== tags
+" filenames like *.xml, *.html, *.xhtml, ...
+" These are the file extensions where this plugin is enabled.
+"
+let g:closetag_filenames = '*.html,*.xhtml,*.phtml'
+
+" filenames like *.xml, *.xhtml, ...
+" This will make the list of non-closing tags self-closing in the specified files.
+"
+let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
+
+" ======================================================================= tags end
+
 
 " general shortcut
 nmap <Leader>wq :wq!<CR>
@@ -339,3 +367,34 @@ colorscheme PaperColor
 " set background=dark " for the dark version
 " set background=light " for the light version
 
+lua << END
+require('lualine').setup {
+  options = {
+    icons_enabled = true,
+    theme = 'auto',
+    component_separators = { left = '', right = ''},
+    section_separators = { left = '', right = ''},
+    disabled_filetypes = {},
+    always_divide_middle = true,
+    globalstatus = false,
+  },
+  sections = {
+    lualine_a = {'mode'},
+    lualine_b = {'branch', 'diff', 'diagnostics'},
+    lualine_c = {'filename'},
+    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
+  },
+  inactive_sections = {
+    lualine_a = {},
+    lualine_b = {},
+    lualine_c = {'filename'},
+    lualine_x = {'location'},
+    lualine_y = {},
+    lualine_z = {}
+  },
+  tabline = {},
+  extensions = {}
+} 
+END
