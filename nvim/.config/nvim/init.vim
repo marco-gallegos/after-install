@@ -24,10 +24,14 @@ set smartindent
 set tabstop=4
 set shiftwidth=4
 set expandtab
+set pastetoggle=<F3>
+set showmode
+set autoread
 
 " new
 set t_Co=256
-set paste
+" enable this by default 
+"set paste
 
 " autocmd BufEnter * lcd %:p:h
 
@@ -134,8 +138,8 @@ call plug#end()
 " to use in easy motion as trigger key: 'space'
 let mapleader = " "
 
-" easymotion plugin hotkey 'space' + 's' -> search 2 chars in all file
-nmap <Leader>s <Plug>(easymotion-s7)
+" easymotion plugin hotkey 'space' + 's' -> search <n> chars in all file
+nmap <Leader>s <Plug>(easymotion-s2)
 
 
 " <CR> is a enter
@@ -171,9 +175,9 @@ nmap <Leader>bu :bw
 " go to beffer
 nmap <Leader>b :buffer 
 " sessions -> this uses the xolox/session
-nmap <Leader>ss :SaveSession<CR>
+nmap <Leader>ss :SaveSession!<CR>
 nmap <Leader>sns :SaveSession 
-nmap <Leader>so :OpenSession<CR>
+nmap <Leader>so :OpenSession!<CR>
 
 " tab shortcuts
 nmap <Leader>tc :tabnew<CR>
@@ -250,8 +254,8 @@ let g:closetag_xhtml_filenames = '*.xhtml,*.jsx'
 
 " general shortcut
 nmap <Leader>wq :wq!<CR>
-nmap <Leader>w :w<CR>
-nmap <Leader>q :q!<CR>
+nmap <C-s> :w<CR>
+nmap <C-Q> :q!<CR>
 " quit all without saving
 nmap <Leader>qq :qa!<CR>
 
@@ -288,6 +292,8 @@ endfunction
 " line exchange using ctrl + shift + up or down
 noremap <silent> <s-up> :call <SID>swap_up()<CR>
 noremap <silent> <s-down> :call <SID>swap_down()<CR>
+
+
 
 
 " ========================================================
@@ -429,7 +435,7 @@ require('telescope').setup{
 			width = 0.87,
 			height = 0.80,
 			preview_cutoff = 120,
-    	},
+		},
 		file_sorter = require("telescope.sorters").get_fuzzy_file,
 		file_ignore_patterns = { "node_modules" },
 		generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter,
