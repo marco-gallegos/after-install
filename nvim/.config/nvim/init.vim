@@ -430,7 +430,8 @@ endfunction
         \ 'coc-eslint', 
         \ 'coc-prettier', 
         \ 'coc-json', 
-        \ 'coc-python',
+        "\ 'coc-python',
+        \ 'coc-pyright',
         \ 'coc-tabnine',
     \ ]
 
