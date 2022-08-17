@@ -55,6 +55,8 @@ Plug 'easymotion/vim-easymotion'
 
 " nerdtree
 Plug 'scrooloose/nerdtree'
+Plug 'kyazdani42/nvim-web-devicons' " optional, for file icons
+Plug 'kyazdani42/nvim-tree.lua'
 
 "vim tmux navigation
 Plug 'christoomey/vim-tmux-navigator'
@@ -147,10 +149,12 @@ nmap <Leader>s <Plug>(easymotion-s2)
 " nerdtree is a file browser
 " 'space' + nt -> open nerd tree in current path
 " nmap <Leader>r :NERDTreeFind<CR>
-nmap <C-;>  :NERDTreeFind<CR>
+nmap <C-;>  :NvimTreeFindFileToggle<CR>
+nmap <M-;>  :NvimTreeFindFileToggle<CR>
 
 " 'space' + ntc -> close or open nerdtree (is here to close)
-nmap <Leader>nt :NERDTreeToggle<CR>
+" nmap <Leader>nt :NERDTreeToggle<CR>
+nmap <Leader>nt  :NvimTreeToggle<CR>
 "nmap <leader>r :NERDTreeFind<cr>
 "autocmd BufWrite * :NERDTreeFind<cr>
 "autocmd BufRead * :NERDTreeFind<cr>
@@ -295,8 +299,8 @@ omap ac <Plug>(coc-classobj-a)
 
 " Use CTRL-S for selections ranges.
 " Requires 'textDocument/selectionRange' support of language server.
-nmap <silent> <C-s> <Plug>(coc-range-select)
-xmap <silent> <C-s> <Plug>(coc-range-select)
+"nmap <silent> <C-s> <Plug>(coc-range-select)
+"xmap <silent> <C-s> <Plug>(coc-range-select)
 
 " Add `:Format` command to format current buffer.
 command! -nargs=0 Format :call CocActionAsync('format')
@@ -386,8 +390,6 @@ endfunction
 " line exchange using ctrl + shift + up or down
 noremap <silent> <s-up> :call <SID>swap_up()<CR>
 noremap <silent> <s-down> :call <SID>swap_down()<CR>
-
-
 
 
 " ========================================================
@@ -568,5 +570,29 @@ require('telescope').setup{
 
 	extensions_list = { "themes", "terms" }
 }
+
+-- OR setup with some options
+require("nvim-tree").setup({
+    sort_by = "case_sensitive",
+    view = {
+        auto_reload_on_write = true,
+        adaptive_size = true,
+        width = 30,
+        height = 30,
+        side = "right",
+        mappings = {
+            list = {
+                { key = "u", action = "dir_up", mode = "n" },
+                { key = "t", action = "tabnew", mode = "n" }
+            },
+        },
+    },
+    renderer = {
+        group_empty = true,
+    },
+    filters = {
+        dotfiles = true,
+    },
+})
 
 END
