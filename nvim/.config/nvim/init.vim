@@ -157,8 +157,10 @@ nmap <Leader>nt :NERDTreeToggle<CR>
 "autocmd BufEnter * :NERDTreeFind<cr>
 " map on visualmode
 vmap <C-/> <plug>NERDCommenterToggle
+vmap <M-/> <plug>NERDCommenterToggle
 " map on normal
 nmap <C-/> <plug>NERDCommenterToggle
+nmap <M-/> <plug>NERDCommenterToggle
 
 
 " ctrl + P | F
