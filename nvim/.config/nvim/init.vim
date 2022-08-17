@@ -573,9 +573,9 @@ require('telescope').setup{
 
 -- OR setup with some options
 require("nvim-tree").setup({
+    auto_reload_on_write = true,
     sort_by = "case_sensitive",
     view = {
-        auto_reload_on_write = true,
         adaptive_size = true,
         width = 30,
         height = 30,
