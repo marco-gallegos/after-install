@@ -8,6 +8,9 @@
 " pip install pynvim
 " npm install tree-sitter-cli
 " npm i -g yarn
+"
+" TODO:
+" binding for :CocCommand markdown-preview-enhanced.openPreview
 
 set number
 set mouse=a
@@ -113,7 +116,7 @@ Plug 'jelera/vim-javascript-syntax'
 
 " php
 "" PHP Bundle
-Plug 'phpactor/phpactor', {'for': 'php', 'do': 'composer install --no-dev -o'}
+"Plug 'phpactor/phpactor', {'for': 'php', 'do': 'composer install --no-dev -o'}
 Plug 'stephpy/vim-php-cs-fixer'
 
 " optional laravel deps
@@ -435,9 +438,12 @@ endfunction
         \ 'coc-eslint', 
         \ 'coc-prettier', 
         \ 'coc-json', 
-        "\ 'coc-python',
+        \ 'coc-marketplace',
         \ 'coc-pyright',
         \ 'coc-tabnine',
+        \ 'coc-phpactor',
+        \ 'coc-webview',
+        \ 'coc-emmet',
     \ ]
 
 " let g:gruvbox_(option) = '(value)'
