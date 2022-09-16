@@ -58,7 +58,7 @@ Plug 'easymotion/vim-easymotion'
 
 " nerdtree
 Plug 'scrooloose/nerdtree'
-Plug 'kyazdani42/nvim-web-devicons' " optional, for file icons
+"Plug 'kyazdani42/nvim-web-devicons' " optional, for file icons
 Plug 'kyazdani42/nvim-tree.lua'
 
 "vim tmux navigation
@@ -67,6 +67,8 @@ Plug 'christoomey/vim-tmux-navigator'
 " better navbar
 " Plug 'itchyny/lightline.vim'
 Plug 'nvim-lualine/lualine.nvim'
+" If you want to have icons in your statusline choose one of these
+Plug 'kyazdani42/nvim-web-devicons'
 
 
 " search plugins to get a better experience
@@ -480,7 +482,7 @@ lua << END
 require('lualine').setup {
 	options = {
 		icons_enabled = true,
-		theme = 'auto',
+		theme = 'codedark',
 		component_separators = { left = '', right = ''},
 		section_separators = { left = '', right = ''},
 		disabled_filetypes = {},
@@ -488,9 +490,20 @@ require('lualine').setup {
 		globalstatus = false,
 	},
 	sections = {
-		lualine_a = {'mode'},
+        lualine_a = {
+            {
+                'mode',
+                icons_enabled = true
+            },
+        },
 		lualine_b = {'branch', 'diff', 'diagnostics'},
-		lualine_c = {'filename'},
+        lualine_c = {
+            {
+                'filename',
+                file_status=true,
+                path=1,
+            }
+        },
 		lualine_x = {'hostname','encoding', 'fileformat', 'filetype'},
 		lualine_y = {'progress'},
 		lualine_z = {'location'}
@@ -498,8 +511,8 @@ require('lualine').setup {
 	inactive_sections = {
 		lualine_a = {},
 		lualine_b = {},
-		lualine_c = {'filename'},
-		lualine_x = {'location'},
+		lualine_c = {},
+		lualine_x = {},
 		lualine_y = {},
 		lualine_z = {}
 	},
