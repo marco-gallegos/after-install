@@ -443,9 +443,10 @@ endfunction
         \ 'coc-marketplace',
         \ 'coc-pyright',
         \ 'coc-tabnine',
-        \ 'coc-phpactor',
+        "\ 'coc-phpactor',
         \ 'coc-webview',
         \ 'coc-emmet',
+        \ 'coc-phpls',
     \ ]
 
 " let g:gruvbox_(option) = '(value)'
