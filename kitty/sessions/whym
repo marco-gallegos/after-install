@@ -4,12 +4,12 @@
 # Set the layout for the current tab
 layout tall
 # Set the working directory for windows in the current tab
-cd /Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
+cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
 # Create a window and run the specified command in it
-launch --title "backend" zsh
-launch --title "watch functions" zsh
-cd /Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
-launch --title "frontend" zsh
+launch --title "functions" zsh -c "npm run serve-only; zsh -i"
+launch --title "watch functions" zsh -c "sleep 5; npm run watch-build; zsh -i"
+cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
+launch --title "frontend" zsh -c "npm run dev; zsh -i"
 
 # cd '/Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions'
 
@@ -17,10 +17,10 @@ launch --title "frontend" zsh
 # ============================================
 # website plugin & git tab
 new_tab
-layout tall
-cd /Users/gallem/Documents/code/whym/whym-super-repo/website-plugins
-launch --title "watch tmtiplugin" zsh
-cd /Users/gallem/Documents/code/whym/whym-super-repo
+layout vertical
+cd ~/Documents/code/whym/whym-super-repo/website-plugins
+launch --title "watch tmtiplugin" zsh -c "npm run watch; zsh -i"
+cd ~/Documents/code/whym/whym-super-repo
 launch --title "repo root" zsh
 
 
@@ -28,15 +28,16 @@ launch --title "repo root" zsh
 # backend editor
 new_tab
 layout tall
-cd /Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
-launch --title "nvim functions" zsh
+cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
+#launch --title "nvim functions" zsh
+launch zsh -c "nvim .; zsh -i"
 
 
 # ============================================
 # frontend editor
 new_tab
 layout tall
-cd /Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
+cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
 launch --title "nvim app" zsh
 # focus
 
