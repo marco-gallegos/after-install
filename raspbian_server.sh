@@ -141,7 +141,7 @@ fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
 	# eacho $sudo_pass | sudo apt -y install nodejs npm
-    # 
+    #  use nvm intead
 	aviso "NodeJs/npm se ha instalado" true
 fi
 
@@ -155,29 +155,44 @@ if [[ ! $val_docker ]];then
 	echo $sudo_pass | sudo usermod -aG docker $user
 fi
 
-if [[ ! $val_flutter ]];then
+if [[ ! $val_flutter && $val_snap ]];then
 	# https://flutter.dev/docs/get-started/install/linux
 	# se debe instalar en /opt/flutter por convencion
 	# echo $sudo_pass | sudo -S 
+    sudo snap install flutter --classic
 	aviso "Flutter se ha instalado para usarlo reinicia el equipo" true
 fi
 
-# eliminamos el archivo
-#if [ -f "${config[rpmqafile]}" ];then
-#	echo $sudo_pass | sudo -S rm "${config[rpmqafile]}"
-#fi
+
+if [[ ! $val_snap ]];then
+   	echo $sudo_pass | sudo apt install snap snapd
+	aviso "Flutter se ha instalado para usarlo reinicia el equipo" true
+fi
+
+
+# script main functions
+
+update(){
+    if [[ ! $val_nala ]]; then
+        echo $sudo_pass | sudo apt update -y
+        echo $sudo_pass | sudo apt upgrade -y
+        echo $sudo_pass | sudo pip3 install --upgrade pip
+    else
+        echo $sudo_pass | sudo nala update
+        echo $sudo_pass | sudo nala upgrade -y
+    fi
+}
+
+
 
 if [[ $1 ]]; then
 	case $1 in
 		"update" )
-			echo $sudo_pass | sudo apt update -y
-			echo $sudo_pass | sudo apt upgrade -y
-			echo $sudo_pass | sudo pip3 install --upgrade pip
-		;;
+            update
+            ;;
 
 		*)
 			echo "opcion invalida: $1"
 	esac
 fi
 
-aviso "saliendo del script"
