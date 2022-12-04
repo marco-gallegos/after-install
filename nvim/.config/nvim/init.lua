@@ -42,8 +42,9 @@ require('packer').startup(function(use)
             {'L3MON4D3/LuaSnip'},
             {'rafamadriz/friendly-snippets'},
 
+            -- TODO: this implementation doesnt work on raspbian (normal aarch64) -> should work on M1 according official documentation
             -- tabnine
-            use {'tzachar/cmp-tabnine', run='./install.sh', requires = 'hrsh7th/nvim-cmp'}
+            -- use {'tzachar/cmp-tabnine', run='./install.sh', requires = 'hrsh7th/nvim-cmp'}
 		}
 	}
 
@@ -140,7 +141,7 @@ end)
 
 -- Declaramos el tema
 vim.opt.termguicolors = true
-pcall(vim.cmd, 'colorscheme onedark')
+-- pcall(vim.cmd, 'colorscheme onedark')
 
 local lsp = require('lsp-zero')
 

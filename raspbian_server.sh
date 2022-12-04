@@ -84,11 +84,12 @@ val_php=$(php --version)
 val_composer=$(composer --version)
 val_node=$(node --version)
 val_npm=$(npm --version)
-val_pm2=$(pm2 --version)
+val_nala=$(nala --version)
+val_snap=$(snap --version)
 
 # aplicaciones/librerias de python
 val_pip_tools=$(pip3 show pip-tools)
-val_spyder=$(pip3 show spyder) # necesitas instalar libqtxdg
+#val_spyder=$(pip3 show spyder) # necesitas instalar libqtxdg
 
 # probando
 val_docker=$(docker --version)
@@ -139,7 +140,8 @@ if [[ ! $val_composer ]]; then
 fi
 
 if [[ ! $val_node || ! $val_npm ]]; then
-	echo $sudo_pass | sudo apt -y install nodejs npm
+	# eacho $sudo_pass | sudo apt -y install nodejs npm
+    # 
 	aviso "NodeJs/npm se ha instalado" true
 fi
 

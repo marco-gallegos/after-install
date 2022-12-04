@@ -23,3 +23,9 @@ set autoread
 set t_Co=256
 
 filetype plugin on
+
+" theme
+
+" colorscheme onedark
+
+colorscheme monokai
