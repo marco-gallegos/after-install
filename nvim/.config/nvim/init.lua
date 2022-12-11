@@ -1,5 +1,5 @@
 -- git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
-
+-- cargo install tree-sitter-cli / or with npm
 -- Dame espacio
 vim.opt.signcolumn = 'yes'
 vim.g.loaded_netrw = 1
@@ -42,7 +42,6 @@ require('packer').startup(function(use)
             {'L3MON4D3/LuaSnip'},
             {'rafamadriz/friendly-snippets'},
 
-            -- TODO: this implementation doesnt work on raspbian (normal aarch64) -> should work on M1 according official documentation
             -- tabnine
             -- use {'tzachar/cmp-tabnine', run='./install.sh', requires = 'hrsh7th/nvim-cmp'}
 		}
@@ -148,6 +147,18 @@ local lsp = require('lsp-zero')
 lsp.preset('recommended')
 lsp.setup()
 
+
+-- inline error strings
+vim.diagnostic.config({
+  virtual_text = true,
+  signs = true,
+  update_in_insert = false,
+  underline = true,
+  severity_sort = false,
+  float = true,
+})
+
+-- TODO: this implementation doesnt work on raspbian (normal aarch64) -> should work on M1 according official documentation
 -- tabnine
 --require('cmp').setup {
     --sources = {
