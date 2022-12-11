@@ -28,19 +28,19 @@ launch --title "repo root" zsh -i
 
 # ============================================
 # backend editor
-new_tab
-layout tall
-cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
-#launch --title "nvim functions" zsh
-launch zsh -c "nvim .; zsh -i"
+#new_tab
+#layout tall
+#cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
+##launch --title "nvim functions" zsh
+#launch zsh -c "nvim .; zsh -i"
 
 
 # ============================================
 # frontend editor
-new_tab
-layout tall
-cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
-launch --title "nvim app" zsh
+#new_tab
+#layout tall
+#cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
+#launch --title "nvim app" zsh
 # focus
 
 ## some example extra
