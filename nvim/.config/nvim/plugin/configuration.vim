@@ -28,4 +28,14 @@ filetype plugin on
 
 " colorscheme onedark
 
-colorscheme monokai
+"colorscheme monokai
+
+" Important!!
+if has('termguicolors')
+  set termguicolors
+endif
+
+" The configuration options should be placed before `colorscheme edge`.
+let g:edge_style = 'neon' " aura | neon | aura dim | light | none
+let g:edge_better_performance = 1
+colorscheme edge

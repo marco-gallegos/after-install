@@ -12,6 +12,10 @@ require('packer').startup(function(use)
 	use "lewis6991/impatient.nvim"
 
 	-- Tema
+    -- tree siiter compatible
+    -- 
+    use 'sainnhe/edge'
+    -- untested tree sitter
 	use 'joshdick/onedark.vim'
     use 'morhetz/gruvbox'
     -- use 'sonph/onehalf', { 'rtp': 'vim' }
