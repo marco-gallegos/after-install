@@ -143,6 +143,12 @@ require('packer').startup(function(use)
 
     -- pairing handler
     use 'Raimondi/delimitMate'
+
+    -- color inline preview 
+    use 'ap/vim-css-color'
+
+    -- last place in file reminder
+    use 'farmergreg/vim-lastplace'
 end)
 
 -- Declaramos el tema
