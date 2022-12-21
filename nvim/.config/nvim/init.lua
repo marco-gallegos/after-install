@@ -140,6 +140,9 @@ require('packer').startup(function(use)
 
     -- BufOnly script -> close all non current buffers
     use 'vim-scripts/BufOnly.vim'
+
+    -- pairing handler
+    use 'Raimondi/delimitMate'
 end)
 
 -- Declaramos el tema
