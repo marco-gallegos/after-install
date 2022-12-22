@@ -149,6 +149,16 @@ require('packer').startup(function(use)
 
     -- last place in file reminder
     use 'farmergreg/vim-lastplace'
+
+    -- markdown extra support
+    --use 'preservim/vim-markdown'
+    use({
+        "iamcco/markdown-preview.nvim",
+        run = "cd app && npm install",
+        setup = function() vim.g.mkdp_filetypes = { "markdown" } end,
+        ft = { "markdown" },
+    })
+
 end)
 
 -- Declaramos el tema
