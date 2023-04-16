@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Get the filename from the argument
+filename=$1
+
+# Validate that the filename was provided
+if [ -z "$filename" ]; then
+  echo "Error: No filename provided."
+  exit 1
+fi
+
+# Add the .bak extension
+newfile="$filename.bak"
+
+# Check if the new backup file already exists
+if [ -f "$newfile" ]; then
+  # Prompt the user to delete the previous existing file
+  read -p "A file with the name $newfile already exists. Do you want to overwrite it? (y/n) " answer
+
+  # Delete the previous existing file if the user confirms
+  if [ "$answer" == "y" ]; then
+    rm "$newfile"
+  else
+    echo "Aborting file copy."
+    exit 1
+  fi
+fi
+
+# Copy the file to a new file with the .bak extension
+cp "$filename" "$newfile"
+
+# Confirm the copy was successful
+if [ $? -eq 0 ]; then
+  echo "File backedup successfully to $newfile"
+else
+  echo "File backup failed!"
+fi
+
