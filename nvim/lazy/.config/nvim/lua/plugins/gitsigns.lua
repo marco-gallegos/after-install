@@ -11,8 +11,15 @@ return {
         linehl     = false, -- Toggle with `:Gitsigns toggle_linehl`
         word_diff  = false, -- Toggle with `:Gitsigns toggle_word_diff`
         watch_gitdir = {
-        interval = 1000,
+        interval = 5000,
             follow_files = true
+        },
+        current_line_blame = true, -- Toggle with `:Gitsigns toggle_current_line_blame`
+        current_line_blame_opts = {
+            virt_text = true,
+            virt_text_pos = 'eol', -- 'eol' | 'overlay' | 'right_align'
+            delay = 4000,
+            ignore_whitespace = false,
         },
         trouble = false,
         on_attach = function(bufnr)
