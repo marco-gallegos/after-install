@@ -39,13 +39,16 @@ endfunction
 " line exchange using ctrl + shift + up or down
 noremap <silent> <s-up> :call <SID>swap_up()<CR>
 noremap <silent> <s-down> :call <SID>swap_down()<CR>
+" copy current selection down
+noremap <silent> <C-A-down> :co.<CR> 
+
 
 " <CR> is a enter
 " nerdtree is a file browser
 " 'space' + nt -> open nerd tree in current path
 " nmap <Leader>r :NERDTreeFind<CR>
 nmap <C-;>  :NvimTreeFindFileToggle<CR>
-nmap <M-;>  :NvimTreeFindFileToggle<CR>
+"nmap <M-;>  :NvimTreeFindFileToggle<CR>
 
 " 'space' + ntc -> close or open nerdtree (is here to close)
 " nmap <Leader>nt :NERDTreeToggle<CR>
@@ -63,8 +66,12 @@ nmap <M-/> <plug>NERDCommenterToggle
 
 
 " ctrl + P | F
-nmap <C-P> :Telescope git_files hidden=true <CR>
-nmap <C-F> :Telescope live_grep <CR>
+nmap <Leader><Tab>  :Telescope buffers <CR>     
+nmap <C-P>          :Telescope git_files hidden=true <CR>
+nmap <C-F>          :Telescope live_grep <CR>
+nmap <C-F><C-F>          :Telescope find_files <CR>
+nmap <Leader>ff          :Telescope current_buffer_fuzzy_find <CR>
+nmap <Leader>gc         :Telescope git_commits <CR>
 
 
 " buffers next and before
