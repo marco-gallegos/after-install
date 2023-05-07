@@ -7,7 +7,7 @@ return {
             { "nvim-telescope/telescope-file-browser.nvim" },
             { "nvim-telescope/telescope-dap.nvim" },
             { "nvim-telescope/telescope-ui-select.nvim" },
-            { "nvim-telescope/telescope-fzf-native.nvim", run = "make" },
+            { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	},
     config = function()
         require('telescope').setup{
