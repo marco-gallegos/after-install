@@ -1,7 +1,7 @@
 set number
 set mouse=a
 set numberwidth=1
-set clipboard=unnamed
+"set clipboard=unnamed  " deprecated
 syntax enable
 set showcmd
 set encoding=utf-8
@@ -19,6 +19,12 @@ set pastetoggle=<F3>
 set showmode
 set autoread
 
+
+"TODO: clipboard configuration needs improvemnt
+"set clipboard=unnamed
+set clipboard+=unnamedplus
+
+
 " new
 set t_Co=256
 
@@ -34,6 +40,9 @@ filetype plugin on
 if has('termguicolors')
   set termguicolors
 endif
+
+
+let g:loaded_perl_provider = 0
 
 " NOTE: theme migrated to lua config fle lua/plugins/theme.lua
 " The configuration options should be placed before `colorscheme edge`.
