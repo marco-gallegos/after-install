@@ -1,0 +1,57 @@
+# ============================================ 
+# back and front tab
+
+# Set the layout for the current tab
+layout tall
+# Set the working directory for windows in the current tab
+cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
+# Create a window and run the specified command in it
+launch --title "functions" zsh -ic "npm run serve-only; zsh -i"
+launch --title "watch functions" zsh -ic "sleep 15; npm run watch-build; zsh -i"
+cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
+launch zsh -c "npm run dev; zsh -i"
+#launch zsh -c "npm run watch; zsh -i"
+
+# cd '/Users/gallem/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions'
+
+# ============================================
+# website plugin & git tab
+new_tab
+layout vertical
+#cd ~/Documents/code/whym/whym-super-repo/website-plugins
+#launch --title "watch tmtiplugin" zsh -c "npm run watch; zsh -i"
+#cd ~/Documents/code/whym/whym-super-repo/mobileapp
+#launch --title "RN app metro" zsh -c "npx react-native start;zsh -i"
+cd ~/Documents/code/whym/whym-super-repo
+launch --title "repo root" zsh -i
+
+
+# ============================================
+# backend editor
+#new_tab
+#layout tall
+#cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/firebase-functions/functions
+##launch --title "nvim functions" zsh
+#launch zsh -c "nvim .; zsh -i"
+
+
+# ============================================
+# frontend editor
+#new_tab
+#layout tall
+#cd ~/Documents/code/whym/whym-super-repo/my.petalfox.com/static-site/app
+#launch --title "nvim app" zsh
+# focus
+
+## some example extra
+# Create a new OS window
+# Any definitions specifed before the first new_os_window will apply to first OS window.
+#new_os_window
+# Set new window size to 80x24 cells
+#os_window_size 80c 24c
+# Set the --class for the new OS window
+#os_window_class mywindow
+#launch sh
+# Make the current window the active (focused) window
+#focus
+#launch emacs
