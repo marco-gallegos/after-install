@@ -29,7 +29,7 @@ return {
                     {
                         'filename',
                         file_status=true,
-                        path=1,
+                        path=2,
                     }
                 },
                 lualine_x = {'hostname','encoding', 'fileformat', 'filetype'},
