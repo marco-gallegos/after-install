@@ -49,3 +49,10 @@ let g:loaded_perl_provider = 0
 " let g:edge_style = 'neon' " aura | neon | aura dim | light | none
 " let g:edge_better_performance = 1
 " colorscheme edge
+"
+
+" toggle relative numbers
+"autocmd InsertEnter * : bufdo norelativenumber
+"autocmd InsertLeave * : bufdo relativenumber
+autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
+autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
