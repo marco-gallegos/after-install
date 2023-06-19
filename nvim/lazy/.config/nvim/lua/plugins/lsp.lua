@@ -24,44 +24,57 @@ return {
         {'rafamadriz/friendly-snippets'},
 	},
 	config = function()
-        --TODO:Llklklk
-        -- require "alpha.lsp"
-		--local lsp = require('lsp-zero')
+        local lsp_zero = require('lsp-zero').preset({})
+        local luasnip = require('luasnip')
+        local lspconfig = require('lspconfig')
 
-		--lsp.preset('recommended')
-		--lsp.setup()
-        --
-        local lsp = require('lsp-zero').preset({})
+        -- snipet loading
+        local luasnip_loader_vsc = require('luasnip.loaders.from_vscode')
 
-        lsp.on_attach(function(client, bufnr)
-            lsp.default_keymaps({
+        lsp_zero.on_attach(function(client, bufnr)
+            lsp_zero.default_keymaps({
                 buffer = bufnr,
                 preserve_mappings = false,
             })
         end)
 
         -- (Optional) Configure lua language server for neovim
-        require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
+        lspconfig.lua_ls.setup(lsp_zero.nvim_lua_ls())
 
-        lsp.setup()
+        lsp_zero.setup()
 
         -- Make sure you setup `cmp` after lsp-zero
 
         local cmp = require('cmp')
-        local cmp_action = require('lsp-zero').cmp_action()
+        local cmp_action = lsp_zero.cmp_action()
+
+        luasnip_loader_vsc.lazy_load()
 
         cmp.setup({
-          mapping = {
-            -- `Enter` key to confirm completion
-            ['<CR>'] = cmp.mapping.confirm({select = false}),
+            mapping = {
+                -- `Enter` key to confirm completion
+                ['<CR>'] = cmp.mapping.confirm({select = false}),
 
-            -- Ctrl+Space to trigger completion menu
-            --['<C-Space>'] = cmp.mapping.complete(),
+                -- Ctrl+Space to trigger completion menu
+                --['<C-Space>'] = cmp.mapping.complete(),
 
-            -- Navigate between snippet placeholder
-            ['<C-f>'] = cmp_action.luasnip_jump_forward(),
-            ['<C-b>'] = cmp_action.luasnip_jump_backward(),
-          }
+                -- Ngate between snippet placeholder
+                --['<C-1>'] = cmp_action.luasnip_jump_forward(),
+                --['<C-b>'] = cmp_action.luasnip_jump_backward(),
+            },
+
+            snippet = {
+                expand = function(args)
+                    luasnip.lsp_expand(args.body)
+                end
+            },
+
+            sources = {
+                { name = 'luasnip' },
+                { name = 'nvim_lsp'},
+                { name = 'buffer'},
+                { name = 'path'},
+            },
         })
 	end,
 }
