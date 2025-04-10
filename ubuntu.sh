@@ -34,8 +34,8 @@ fi
 read -sp 'enter the sudo password:' sudo_pass
 echo ""
 if [[ ! $sudo_pass ]]; then
-  aviso "necesito el pasword de sudo"
-  exit
+    aviso "necesito el pasword de sudo"
+    exit
 fi
 
 
@@ -110,7 +110,7 @@ if [[ ! $1 ]]; then
 
     if [[ ! $val_pip || ! $val_python ]]; then
         echo $sudo_pass | sudo -S apt install python3-pip -y
-    aviso "Python y/o PIP esta instalado" true
+        aviso "Python y/o PIP esta instalado" true
     fi
 
     if [[ ! $val_php ]]; then
@@ -159,15 +159,127 @@ if [[ ! $1 ]]; then
 
 fi
 
+VscodeExtensions(){
+    code --install-extension ms-python.python
+    code --install-extension ritwickdey.liveserver
+    code --install-extension visualstudioexptteam.vscodeintellicode
+    code --install-extension ms-azuretools.vscode-docker
+    code --install-extension octref.vetur
+    code --install-extension pkief.material-icon-theme
+    code --install-extension felixfbecker.php-intellisense
+    code --install-extension redhat.vscode-yaml
+    code --install-extension xabikos.javascriptsnippets
+    code --install-extension formulahendry.auto-rename-tag
+    code --install-extension golang.go
+    code --install-extension christian-kohler.path-intellisense
+    code --install-extension formulahendry.auto-close-tag
+    code --install-extension zignd.html-css-class-completion
+    code --install-extension naumovs.color-highlight
+    code --install-extension dsznajder.es7-react-js-snippets
+    code --install-extension yzhang.markdown-all-in-one
+    # code --install-extension coenraads.bracket-pair-colorizer-2 -> built in in newest versions
+    code --install-extension oderwat.indent-rainbow
+    code --install-extension mikestead.dotenv
+    code --install-extension thekalinga.bootstrap4-vscode
+    code --install-extension onecentlin.laravel-blade
+    code --install-extension mhutchie.git-graph
+    code --install-extension mechatroner.rainbow-csv
+    code --install-extension gruntfuggly.todo-tree
+    code --install-extension onecentlin.laravel5-snippets
+    code --install-extension orta.vscode-jest
+    code --install-extension pivotal.vscode-boot-dev-pack
+    code --install-extension njpwerner.autodocstring
+    code --install-extension cjhowe7.laravel-blade
+    code --install-extension ms-dotnettools.csharp
+}
+
+VscodiumExtensions(){
+    codium --install-extension ms-python.python
+    codium --install-extension ritwickdey.liveserver
+    codium --install-extension visualstudioexptteam.vscodeintellicode
+    codium --install-extension ms-azuretools.vscode-docker
+    codium --install-extension octref.vetur
+    codium --install-extension pkief.material-icon-theme
+    codium --install-extension felixfbecker.php-intellisense
+    codium --install-extension redhat.vscode-yaml
+    codium --install-extension xabikos.javascriptsnippets
+    codium --install-extension formulahendry.auto-rename-tag
+    codium --install-extension golang.go
+    codium --install-extension christian-kohler.path-intellisense
+    codium --install-extension formulahendry.auto-close-tag
+    codium --install-extension zignd.html-css-class-completion
+    codium --install-extension naumovs.color-highlight
+    codium --install-extension dsznajder.es7-react-js-snippets
+    codium --install-extension yzhang.markdown-all-in-one
+    # codium --install-extension coenraads.bracket-pair-colorizer-2 -> built in in new versions
+    codium --install-extension oderwat.indent-rainbow
+    codium --install-extension mikestead.dotenv
+    codium --install-extension thekalinga.bootstrap4-vscode
+    codium --install-extension onecentlin.laravel-blade
+    codium --install-extension mhutchie.git-graph
+    codium --install-extension mechatroner.rainbow-csv
+    codium --install-extension gruntfuggly.todo-tree
+    codium --install-extension onecentlin.laravel5-snippets
+    codium --install-extension orta.vscode-jest
+    codium --install-extension pivotal.vscode-boot-dev-pack
+    codium --install-extension njpwerner.autodocstring
+    codium --install-extension cjhowe7.laravel-blade
+    codium --install-extension ms-dotnettools.csharp
+
+    ## news not sure if exist on vscode
+    codium --install-extension mads-hartmann.bash-ide-vscode
+}
 
 if [[ $1 ]]; then
+    ## some vars to update system
+
+    val_nala=$(nala --version)
+    val_uv=$(uv --version)
+    # val_nvm=$(nvm --version)
+    val_node=$(node --version)
+    val_rustup=$(rustup --version)
+    val_snap=$(snap --version)
+
 	case $1 in
 		"update" )
             echo $sudo_pass | sudo apt clean -y
-			echo $sudo_pass | sudo apt update -y
-			echo $sudo_pass | sudo apt upgrade -y
-			echo $sudo_pass | pip3 install --upgrade pip
+
+            if [[ -n "$val_nala" ]]; then 
+                #echo $sudo_pass | sudo nala upgrade --full -y
+                echo "nala plcaeholder"
+            else
+                echo $sudo_pass | sudo apt update -y
+                echo $sudo_pass | sudo apt upgrade -y
+            fi
+			
+            if [[ -n "$val_uv" ]]; then 
+                uv self update
+            fi
+            
+            # if [[ -n "$val_nvm" ]]; then 
+            #     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+            # fi
+            
+            if [[ -n "$val_node" ]]; then 
+                npm update -g
+            fi
+
+            if [[ -n "$val_rustup" ]]; then 
+                rustup update
+            fi
+
+            if [[ -n "$val_snap" ]]; then 
+                echo $sudo_pass | sudo snap refresh
+            fi
 		;;
+
+        "code-extensions" )
+            VscodeExtensions
+        ;;
+
+        "codium-extensions" )
+            VscodiumExtensions
+        ;;
 
 		*)
 			echo "opcion invalida: $1"

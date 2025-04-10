@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+def update_if_true(execute:bool, func):
+    func()
+
+
+def echo():
+    print("echooooo")
+
+update_if_true(True, echo)
