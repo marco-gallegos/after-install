@@ -3,6 +3,7 @@
 *.ignore.*
 *packer_compiled.lua
 *lazy-lock.json
+*.env
 
 .vscode
 .vscode/*

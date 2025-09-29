@@ -226,6 +226,10 @@ VscodiumExtensions() {
   codium --install-extension tamasfe.even-better-toml
 }
 
+DbBackup() {
+
+}
+
 if [[ $1 ]]; then
   ## some vars to update system
 
@@ -275,6 +279,10 @@ if [[ $1 ]]; then
 
   "codium-extensions")
     VscodiumExtensions
+    ;;
+
+  "dbbackup")
+    DbBackup
     ;;
 
   *)
