@@ -37,16 +37,16 @@ PG_BACKUP_DIR="$TARGET_DIR/postgresql"
 mkdir -p "$PG_BACKUP_DIR"
 
 if [ -n "$PG_PASSWORD" ]; then
-    export PGPASSWORD="$PG_PASSWORD"
+  export PGPASSWORD="$PG_PASSWORD"
 fi
 
-pg_dumpall -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" > "$PG_BACKUP_DIR/postgresql_full_backup_$DATE.sql"
+pg_dumpall -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" >"$PG_BACKUP_DIR/postgresql_full_backup_$DATE.sql"
 
 if [ $? -eq 0 ]; then
-    echo "PostgreSQL backup completed successfully"
-    gzip "$PG_BACKUP_DIR/postgresql_full_backup_$DATE.sql"
+  echo "PostgreSQL backup completed successfully"
+  gzip "$PG_BACKUP_DIR/postgresql_full_backup_$DATE.sql"
 else
-    echo "PostgreSQL backup failed"
+  echo "PostgreSQL backup failed"
 fi
 
 unset PGPASSWORD
@@ -57,18 +57,18 @@ MONGO_BACKUP_DIR="$TARGET_DIR/mongodb"
 mkdir -p "$MONGO_BACKUP_DIR"
 
 if [ -n "$MONGO_USER" ] && [ -n "$MONGO_PASSWORD" ]; then
-    mongodump --host "$MONGO_HOST:$MONGO_PORT" --username "$MONGO_USER" --password "$MONGO_PASSWORD" --out "$MONGO_BACKUP_DIR/mongodb_backup_$DATE"
+  mongodump --host "$MONGO_HOST:$MONGO_PORT" --username "$MONGO_USER" --password "$MONGO_PASSWORD" --out "$MONGO_BACKUP_DIR/mongodb_backup_$DATE"
 else
-    mongodump --host "$MONGO_HOST:$MONGO_PORT" --out "$MONGO_BACKUP_DIR/mongodb_backup_$DATE"
+  mongodump --host "$MONGO_HOST:$MONGO_PORT" --out "$MONGO_BACKUP_DIR/mongodb_backup_$DATE"
 fi
 
 if [ $? -eq 0 ]; then
-    echo "MongoDB backup completed successfully"
-    cd "$MONGO_BACKUP_DIR"
-    tar -czf "mongodb_backup_$DATE.tar.gz" "mongodb_backup_$DATE"
-    rm -rf "mongodb_backup_$DATE"
+  echo "MongoDB backup completed successfully"
+  cd "$MONGO_BACKUP_DIR"
+  tar -czf "mongodb_backup_$DATE.tar.gz" "mongodb_backup_$DATE"
+  rm -rf "mongodb_backup_$DATE"
 else
-    echo "MongoDB backup failed"
+  echo "MongoDB backup failed"
 fi
 
 # MySQL Backup
@@ -78,16 +78,16 @@ mkdir -p "$MYSQL_BACKUP_DIR"
 
 MYSQL_OPTS="-h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER"
 if [ -n "$MYSQL_PASSWORD" ]; then
-    MYSQL_OPTS="$MYSQL_OPTS -p$MYSQL_PASSWORD"
+  MYSQL_OPTS="$MYSQL_OPTS -p$MYSQL_PASSWORD"
 fi
 
-# mysqldump $MYSQL_OPTS --all-databases --single-transaction --routines --triggers > "$MYSQL_BACKUP_DIR/mysql_full_backup_$DATE.sql"
+mariadb-dump $MYSQL_OPTS --all-databases --single-transaction --routines --triggers >"$MYSQL_BACKUP_DIR/mysql_full_backup_$DATE.sql"
 
 if [ $? -eq 0 ]; then
-    echo "MySQL backup completed successfully"
-    gzip "$MYSQL_BACKUP_DIR/mysql_full_backup_$DATE.sql"
+  echo "MySQL backup completed successfully"
+  gzip "$MYSQL_BACKUP_DIR/mysql_full_backup_$DATE.sql"
 else
-    echo "MySQL backup failed"
+  echo "MySQL backup failed"
 fi
 
 echo "Database backups completed - $DATE"
