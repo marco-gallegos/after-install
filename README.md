@@ -116,6 +116,9 @@ nvim /etc/profile -> export PATH=$PATH:/var/lib/snapd/snap/bin
 now you only need conect phone and install platform tools
 
 ```shell
+# install java
+sudo apt install openjdk-21-jdk-headless
+
 # use unziped content to install platform tools
 sdkmanager --install platform-tools
 
@@ -140,6 +143,19 @@ echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="{ID}", MODE="0666", GROUP="plugdev"' | 
 adb devices -> list devices
 ```
 
+### continue RN official docs
+
+i prefer to avoid expo so read [this](https://reactnative.dev/docs/getting-started-without-a-framework)
+
+```shell
+npx @react-native-community/cli@latest init AwesomeProject
+
+cd AwesomeProject
+
+npm start
+
+npm run android
+```
 
 ## netcore en fedora 32
 
