@@ -68,11 +68,13 @@ the adb configuration is also useful on flutter
 
 install android studio -> use snap store
 
+```shell
 export ANDROID_HOME=$HOME/Android/Sdk
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/tools/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
+```
 
 instalar watchman
 
@@ -148,4 +150,5 @@ name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
+
 gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
