@@ -74,6 +74,14 @@ export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/tools/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
+# zip from android studio page as alternative download
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools
+```
+
+### copy unziped download
+
+```bash
+mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
 ```
 
 instalar watchman
@@ -152,3 +160,4 @@ gpgcheck=1
 enabled=1
 
 gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+
