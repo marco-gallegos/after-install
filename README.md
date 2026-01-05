@@ -2,11 +2,6 @@
 
 Scripts para montar de nuevo mi ambiente de trabajo instalando el software comun y configuracion
 
-## Dependencias
-
-* zenity
-* stow
-
 
 ## To Do
 
@@ -60,13 +55,20 @@ stow -Dv -t ~ bash
 7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on $directorio_destino/http.7z origen
 
 
-## react native install
+## react native install (no gui required on linux also works on mac)
 
 ### note
 
 the adb configuration is also useful on flutter
 
-install android studio -> use snap store
+
+### android studio or cmdline-tools (prefered)
+
+install android studio better use snap store and thst it android studio handles everything you need (but needs a ui).
+
+Or download cmdline tools from android studio alternative download, just scroll down (zip file) this doesnt requires ui, ex: you can use ssh
+
+then add all this paths to allow anyone find sdk files downloaded
 
 ```shell
 export ANDROID_HOME=$HOME/Android/Sdk
@@ -76,34 +78,68 @@ export PATH=$PATH:$ANDROID_HOME/tools/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 # zip from android studio page as alternative download
 export PATH=$PATH:$ANDROID_HOME/cmdline-tools
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
 ```
 
-### copy unziped download
+#### copy unziped download
 
 ```bash
+# dont forget enable envs
+source ~/.bashrc
+
+# create folders
+mkdir -p $ANDROID_HOME/cmdline-tools/
+
+# moving downloaded unziped file
 mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
 ```
 
-instalar watchman
+#### instalar watchman (optional)
 
+```shell
+# fedora
 sudo dnf copr enable eklitzke/watchman 
 
-nvim /etc/profile -> export PATH=$PATH:/var/lib/snapd/snap/bin
+#ubuntu
+sudo apt install watchman
+```
 
+#### some optional steps
+
+```shell
+nvim /etc/profile -> export PATH=$PATH:/var/lib/snapd/snap/bin
+```
+
+
+#### Connectiing cellphone using usb
+
+now you only need conect phone and install platform tools
+
+```shell
+# use unziped content to install platform tools
+sdkmanager --install platform-tools
+
+# if env vars are ok then you can use adb now (from platform tools)
+adb devices
+```
+
+if adb devices is not listing your device and permission is not requested on device, enable debug on phone and run this (tested on ubuntu not required after 2024)
+
+
+```shell
 setup device -> lsusb -> 4 digits (ID) from device on usb mode
 
 
-add rule:
-
+# add rule:
 echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="{ID}", MODE="0666", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/51-android-usb.rules
 
+# ej:
+# echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="2e04", MODE="0666", GROUP="plugdev"' | sudo tee /# etc/udev/rules.d/51-android-usb.rules
+
+## try again
 adb devices -> list devices
+```
 
-ej:
-echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="2e04", MODE="0666", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/51-android-usb.rules
-
-check usb debugging on true on device
-now can see
 
 ## netcore en fedora 32
 
