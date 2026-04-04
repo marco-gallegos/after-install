@@ -1,15 +1,93 @@
-#!/usr/bin/env python
+# /// script
+# requires-python = ">= 3.14"
+# dependencies = ["rich"]
+# ///
+
+# Note: This script requires Python 3.14 with freethreading enabled (python3.14t)
+
+import os
+import subprocess
+import threading
+import time
+from pathlib import Path
+from typing import Any
+
+from rich.console import Console
+from rich.theme import Theme
+
+custom_theme = Theme({
+    "info": "cyan",
+    "warning": "yellow",
+    "error": "red bold",
+    "success": "green",
+    "title": "bold magenta",
+})
+console = Console(theme=custom_theme)
 
 
-def update_if_true(execute:bool, to_execute: callable):
-    to_execute()
+def collect_env_vars(results: dict[str, Any]) -> None:
+    start = time.perf_counter()
+
+    distro_text = Path("/etc/os-release").read_text()
+    for line in distro_text.splitlines():
+        if line.startswith("NAME="):
+            results["distro_name"] = line.split("=", 1)[1].strip().strip('"')
+        elif line.startswith("VERSION_ID="):
+            results["distro_version"] = line.split("=", 1)[1].strip().strip('"')
+
+    results["desktop_environment"] = os.environ.get("DESKTOP_SESSION")
+    results["user"] = os.getlogin()
+    results["host_name"] = os.uname().nodename
+
+    try:
+        results["swappiness"] = Path("/proc/sys/vm/swappiness").read_text().strip()
+    except FileNotFoundError:
+        results["swappiness"] = None
+
+    commands = [
+        "stow", "git", "python3", "pip3", "php", "composer",
+        "node", "npm", "nvim", "docker", "flutter", "rustc", "cargo"
+    ]
+    results["versions"] = {}
+
+    for cmd in commands:
+        try:
+            output = subprocess.run(
+                [cmd, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            version_output = output.stdout.strip() or output.stderr.strip()
+            results["versions"][cmd] = version_output if version_output else None
+        except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+            results["versions"][cmd] = None
+
+    results["duration"] = time.perf_counter() - start
 
 
-def echo():
-    print("echooooo")
+def main() -> None:
+    results: dict[str, Any] = {}
 
-def ok():
-    print("okkkkkk")
+    worker = threading.Thread(target=collect_env_vars, args=(results,))
+    worker.start()
+    worker.join()
 
-update_if_true(True, echo)
-update_if_true(False, ok)
+    console.print("[title]=== Environment Variables ===[/title]")
+    for key, value in results.items():
+        if key == "versions":
+            continue
+        if key == "duration":
+            continue
+        console.print(f"[info]{key}:[/info] [success]{value if value is not None else 'N/A'}[/success]")
+
+    console.print("\n[title]=== Versions ===[/title]")
+    for cmd, version in results.get("versions", {}).items():
+        console.print(f"[info]{cmd}:[/info] [success]{version if version is not None else 'N/A'}[/success]")
+
+    console.print(f"\n[title]=== Performance ===[/title]")
+    console.print(f"[success]Thread completed in {results.get('duration', 0):.2f} seconds[/success]")
+
+
+if __name__ == "__main__":
+    main()
