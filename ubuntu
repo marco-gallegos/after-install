@@ -1,17 +1,19 @@
 # /// script
 # requires-python = ">= 3.14"
-# dependencies = ["rich"]
+# dependencies = ["rich", "click"]
 # ///
 
-# Note: This script requires Python 3.14 with freethreading enabled (python3.14t)
-
+import getpass
 import os
+import shutil
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
 from typing import Any
 
+import click
 from rich.console import Console
 from rich.theme import Theme
 
@@ -24,31 +26,91 @@ custom_theme = Theme({
 })
 console = Console(theme=custom_theme)
 
+IDE_COMMANDS = {
+    "vscode": "code",
+    "codium": "codium",
+    "trae": "trae",
+    "cursor": "cursor",
+    "antigravity": "antigravity",
+}
 
-def collect_env_vars(results: dict[str, Any]) -> None:
+EXTENSIONS = [
+    {"id": "ms-python.python", "details": "Python support"},
+    {"id": "ritwickdey.liveserver", "details": "Live Server"},
+    {"id": "visualstudioexptteam.vscodeintellicode", "details": "IntelliCode"},
+    {"id": "ms-azuretools.vscode-docker", "details": "Docker"},
+    {"id": "octref.vetur", "details": "Vue.js support"},
+    {"id": "pkief.material-icon-theme", "details": "Material Icons"},
+    {"id": "felixfbecker.php-intellisense", "details": "PHP IntelliSense"},
+    {"id": "redhat.vscode-yaml", "details": "YAML support"},
+    {"id": "xabikos.javascriptsnippets", "details": "JS Snippets"},
+    {"id": "formulahendry.auto-rename-tag", "details": "Auto Rename Tag"},
+    {"id": "golang.go", "details": "Go language"},
+    {"id": "christian-kohler.path-intellisense", "details": "Path IntelliSense"},
+    {"id": "formulahendry.auto-close-tag", "details": "Auto Close Tag"},
+    {"id": "zignd.html-css-class-completion", "details": "HTML CSS Completion"},
+    {"id": "naumovs.color-highlight", "details": "Color Highlight"},
+    {"id": "dsznajder.es7-react-js-snippets", "details": "React JS Snippets"},
+    {"id": "yzhang.markdown-all-in-one", "details": "Markdown All in One"},
+    {"id": "oderwat.indent-rainbow", "details": "Indent Rainbow"},
+    {"id": "mikestead.dotenv", "details": "dotenv support"},
+    {"id": "thekalinga.bootstrap4-vscode", "details": "Bootstrap 4"},
+    {"id": "onecentlin.laravel-blade", "details": "Laravel Blade"},
+    {"id": "mhutchie.git-graph", "details": "Git Graph"},
+    {"id": "mechatroner.rainbow-csv", "details": "Rainbow CSV"},
+    {"id": "gruntfuggly.todo-tree", "details": "TODO Tree"},
+    {"id": "onecentlin.laravel5-snippets", "details": "Laravel 5 Snippets"},
+    {"id": "orta.vscode-jest", "details": "Jest support"},
+    {"id": "pivotal.vscode-boot-dev-pack", "details": "Spring Boot"},
+    {"id": "njpwerner.autodocstring", "details": "Auto Docstring"},
+    {"id": "cjhowe7.laravel-blade", "details": "Laravel Blade Snippets"},
+    {"id": "ms-dotnettools.csharp", "details": "C# support"},
+    {"id": "mads-hartmann.bash-ide-vscode", "details": "Bash IDE"},
+    {"id": "tamasfe.even-better-toml", "details": "TOML support"},
+]
+
+results: dict[str, Any] = {}
+
+
+def collect_system_info(res: dict[str, Any]) -> None:
     start = time.perf_counter()
 
     distro_text = Path("/etc/os-release").read_text()
     for line in distro_text.splitlines():
         if line.startswith("NAME="):
-            results["distro_name"] = line.split("=", 1)[1].strip().strip('"')
+            res["distro_name"] = line.split("=", 1)[1].strip().strip('"')
         elif line.startswith("VERSION_ID="):
-            results["distro_version"] = line.split("=", 1)[1].strip().strip('"')
+            res["distro_version"] = line.split("=", 1)[1].strip().strip('"')
 
-    results["desktop_environment"] = os.environ.get("DESKTOP_SESSION")
-    results["user"] = os.getlogin()
-    results["host_name"] = os.uname().nodename
+    res["desktop_environment"] = os.environ.get("DESKTOP_SESSION")
+    try:
+        res["user"] = os.getlogin()
+    except OSError:
+        res["user"] = os.environ.get("USER", None)
+    res["host_name"] = os.uname().nodename
 
     try:
-        results["swappiness"] = Path("/proc/sys/vm/swappiness").read_text().strip()
+        res["swappiness"] = Path("/proc/sys/vm/swappiness").read_text().strip()
     except FileNotFoundError:
-        results["swappiness"] = None
+        res["swappiness"] = None
+
+    if shutil.which("nala"):
+        res["package_manager"] = "nala"
+    elif shutil.which("apt"):
+        res["package_manager"] = "apt"
+    else:
+        res["package_manager"] = None
+
+    res["available_ides"] = {}
+    for name, cmd in IDE_COMMANDS.items():
+        if shutil.which(cmd):
+            res["available_ides"][name] = cmd
 
     commands = [
         "stow", "git", "python3", "pip3", "php", "composer",
-        "node", "npm", "nvim", "docker", "flutter", "rustc", "cargo"
+        "node", "npm", "nvim", "docker", "flutter", "rustc", "cargo", "uv", "rustup"
     ]
-    results["versions"] = {}
+    res["versions"] = {}
 
     for cmd in commands:
         try:
@@ -59,19 +121,189 @@ def collect_env_vars(results: dict[str, Any]) -> None:
                 timeout=5
             )
             version_output = output.stdout.strip() or output.stderr.strip()
-            results["versions"][cmd] = version_output if version_output else None
+            res["versions"][cmd] = version_output if version_output else None
         except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
-            results["versions"][cmd] = None
+            res["versions"][cmd] = None
 
-    results["duration"] = time.perf_counter() - start
+    res["duration"] = time.perf_counter() - start
+
+
+def get_sudo_password() -> str | None:
+    console.print("[info]Sudo password options:[/info]")
+    console.print("  [info]1.[/info] Interactive input (secure)")
+    console.print("  [info]2.[/info] From SUDO_PASS env var")
+    console.print("  [info]3.[/info] Let sudo prompt naturally")
+
+    choice = click.prompt("Select option", type=int, default=3)
+
+    if choice == 1:
+        return getpass.getpass("sudo password: ")
+    elif choice == 2:
+        console.print("[warning]Warning: SUDO_PASS env var is visible in process list[/warning]")
+        return os.environ.get("SUDO_PASS")
+    else:
+        return None
+
+
+def run_sudo(cmd: list[str], sudo_pass: str | None, timeout: int = 300) -> bool:
+    try:
+        if sudo_pass:
+            result = subprocess.run(
+                ["sudo"] + cmd,
+                input=f"{sudo_pass}\n",
+                text=True,
+                timeout=timeout
+            )
+        else:
+            result = subprocess.run(
+                ["sudo", "-n"] + cmd,
+                timeout=timeout
+            )
+        if result.stdout:
+            console.print(result.stdout)
+        if result.stderr:
+            console.print(f"[warning]{result.stderr}[/warning]")
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        console.print(f"[error]Command timed out: {' '.join(cmd)}[/error]")
+        return False
+    except Exception as e:
+        console.print(f"[error]Error: {e}[/error]")
+        return False
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def update():
+    """Update system packages and tools"""
+    sudo_pass = get_sudo_password()
+    pkg_mgr = results.get("package_manager", "apt")
+
+    console.print(f"[info]Using package manager: {pkg_mgr}[/info]")
+
+    console.print("[info]Cleaning...[/info]")
+    if pkg_mgr == "nala":
+        if not run_sudo(["nala", "clean"], sudo_pass):
+            console.print("[warning]Clean failed[/warning]")
+    else:
+        if not run_sudo(["apt", "clean"], sudo_pass):
+            console.print("[warning]Clean failed[/warning]")
+
+    console.print("[info]Updating packages...[/info]")
+    if pkg_mgr == "nala":
+        if not run_sudo(["nala", "update"], sudo_pass):
+            console.print("[warning]Update failed[/warning]")
+        if not run_sudo(["nala", "upgrade", "--full", "-y"], sudo_pass):
+            console.print("[warning]Upgrade failed[/warning]")
+    else:
+        if not run_sudo(["apt", "update", "-y"], sudo_pass):
+            console.print("[warning]Update failed[/warning]")
+        if not run_sudo(["apt", "upgrade", "-y"], sudo_pass):
+            console.print("[warning]Upgrade failed[/warning]")
+
+    if results.get("versions", {}).get("uv"):
+        console.print("[info]Updating uv...[/info]")
+        try:
+            result = subprocess.run(["uv", "self", "update"], timeout=60, text=True)
+            if result.stdout:
+                console.print(result.stdout)
+        except Exception as e:
+            console.print(f"[error]uv update failed: {e}[/error]")
+
+    if results.get("versions", {}).get("npm"):
+        console.print("[info]Updating npm packages...[/info]")
+        try:
+            result = subprocess.run(["npm", "update", "-g"], timeout=120, text=True)
+            if result.stdout:
+                console.print(result.stdout)
+        except Exception as e:
+            console.print(f"[error]npm update failed: {e}[/error]")
+
+    if results.get("versions", {}).get("rustup"):
+        console.print("[info]Updating Rust...[/info]")
+        try:
+            result = subprocess.run(["rustup", "update"], timeout=120, text=True)
+            if result.stdout:
+                console.print(result.stdout)
+            if result.stderr:
+                console.print(f"[warning]{result.stderr}[/warning]")
+        except Exception as e:
+            console.print(f"[error]rustup update failed: {e}[/error]")
+
+    if shutil.which("snap"):
+        console.print("[info]Updating snap packages...[/info]")
+        try:
+            result = subprocess.run(["sudo", "snap", "refresh"], timeout=300, text=True)
+            if result.stdout:
+                console.print(result.stdout)
+        except Exception as e:
+            console.print(f"[error]snap refresh failed: {e}[/error]")
+
+    console.print("[success]Update complete![/success]")
+
+
+@cli.command()
+@click.option("--ide", "-i", multiple=True, help="IDE(s) to install on")
+@click.option("--list", "list_extensions", is_flag=True, help="List available extensions")
+def extensions(ide: tuple, list_extensions: bool):
+    """Install extensions on selected IDEs"""
+    if list_extensions:
+        console.print("[title]Available Extensions:[/title]")
+        for ext in EXTENSIONS:
+            console.print(f"  [info]{ext['id']}:[/info] {ext.get('details', '')}")
+        return
+
+    available = results.get("available_ides", {})
+
+    if not ide:
+        selected = list(available.keys())
+        if not selected:
+            console.print("[error]No IDEs detected. Use --ide to specify.[/error]")
+            return
+    else:
+        selected = []
+        for i in ide:
+            if i in available:
+                selected.append(i)
+            else:
+                console.print(f"[warning]Skipping {i}: not found[/warning]")
+
+    console.print(f"[info]Installing on: {', '.join(selected)}[/info]")
+
+    for ide_name in selected:
+        cmd = available[ide_name]
+        for ext in EXTENSIONS:
+            try:
+                subprocess.run(
+                    [cmd, "--install-extension", ext["id"]],
+                    timeout=30,
+                    capture_output=True
+                )
+                console.print(f"[success]{ide_name}:[/success] {ext['id']}")
+            except Exception:
+                console.print(f"[error]Failed: {ext['id']}[/error]")
+                continue
 
 
 def main() -> None:
-    results: dict[str, Any] = {}
+    global results
 
-    worker = threading.Thread(target=collect_env_vars, args=(results,))
+    worker = threading.Thread(target=collect_system_info, args=(results,))
     worker.start()
     worker.join()
+
+    if len(sys.argv) > 1:
+        cli()
+    else:
+        print_results()
+
+
+def print_results():
+    global results
 
     console.print("[title]=== Environment Variables ===[/title]")
     for key, value in results.items():
@@ -79,7 +311,20 @@ def main() -> None:
             continue
         if key == "duration":
             continue
+        if key == "available_ides":
+            continue
         console.print(f"[info]{key}:[/info] [success]{value if value is not None else 'N/A'}[/success]")
+
+    console.print("\n[title]=== Package Manager ===[/title]")
+    console.print(f"[info]pkg_mgr:[/info] [success]{results.get('package_manager', 'N/A')}[/success]")
+
+    console.print("\n[title]=== Available IDEs ===[/title]")
+    ides = results.get("available_ides", {})
+    if ides:
+        for name in ides:
+            console.print(f"  [success]{name}[/success]")
+    else:
+        console.print("  [info]N/A[/info]")
 
     console.print("\n[title]=== Versions ===[/title]")
     for cmd, version in results.get("versions", {}).items():
@@ -87,6 +332,12 @@ def main() -> None:
 
     console.print(f"\n[title]=== Performance ===[/title]")
     console.print(f"[success]Thread completed in {results.get('duration', 0):.2f} seconds[/success]")
+
+    console.print("\n[title]=== Commands ===[/title]")
+    console.print("  [info]uv run ubuntu update[/info] - Update system packages")
+    console.print("  [info]uv run ubuntu extensions[/info] - Install extensions on detected IDEs")
+    console.print("  [info]uv run ubuntu extensions --list[/info] - List available extensions")
+    console.print("  [info]uv run ubuntu extensions -i vscode -i trae[/info] - Install on specific IDEs")
 
 
 if __name__ == "__main__":
