@@ -1,0 +1,42 @@
+<?xml version="1.0" standalone="no"?>
+<mlt LC_NUMERIC="C" version="7.36.1" title="Template 1080p60 H.265 NVENC" producer="main_bin">
+  <profile description="1920x1080 60fps 16:9" width="1920" height="1080" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="16" display_aspect_den="9" frame_rate_num="60" frame_rate_den="1" colorspace="709"/>
+  
+  <playlist id="main_bin">
+    <property name="shotcut:projectAudioChannels">2</property>
+    <property name="shotcut:projectFolder">1</property>
+    <property name="shotcut:processingMode">Native8Cpu</property>
+  </playlist>
+  
+  <playlist id="playlist0" title="Timeline"/>
+  
+  <tractor id="tractor0" title="Template 1080p60 H.265 NVENC" in="00:00:00.000" out="00:00:00.000">
+    <property name="shotcut">1</property>
+    <track producer="playlist0"/>
+    <transition id="transition0">
+      <property name="a_track">0</property>
+      <property name="b_track">-1</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+  </tractor>
+  
+  <!-- Export preset: H.265 NVENC 1080p60 -->
+  <property name="shotcut:export">avformat</property>
+  <property name="shotcut:export.filename">video_1080p60.mp4</property>
+  <property name="shotcut:export.audioCodec">aac</property>
+  <property name="shotcut:export.videoCodec">hevc_nvenc</property>
+  <property name="shotcut:export.videoBitrate">8000k</property>
+  <property name="shotcut:export.audioBitrate">192k</property>
+  <property name="shotcut:export.resolution">1920x1080</property>
+  <property name="shotcut:export.fps">60</property>
+  <property name="shotcut:export.preset">slow</property>
+  <property name="shotcut:export.tune">hq</property>
+  <property name="shotcut:export.profile">main10</property>
+  <property name="shotcut:export.gop">120</property>
+  <property name="shotcut:export.bframes">2</property>
+  <property name="shotcut:export.useAdvanced">1</property>
+  <property name="shotcut:export.audioChannels">2</property>
+  <property name="shotcut:export.audioSampleRate">48000</property>
+</mlt>

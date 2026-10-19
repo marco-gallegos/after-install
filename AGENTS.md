@@ -6,6 +6,8 @@ This is a dotfiles/setup scripts repository containing shell installation script
 
 - `*.sh` - Installation scripts for different OSes (fedora32.sh, manjaro.sh, etc.)
 - `ubuntu` - Ubuntu installer/updater (Python, run with `uv run ./ubuntu`)
+- `gallariz` - Gallariz video workspace helper (Python, run with `uv run ./gallariz`)
+- `templates/` - Gallariz video/thumbnail templates used by `gallariz new-project`
 - `bash/`, `nvim/`, `alacritty/`, `kitty/`, `zsh/` - Configuration directories
 - `bin/` - Utility scripts
 - `convert.py`, `enrich_json.py` - Python utilities (use `uv run`)
@@ -18,6 +20,11 @@ This is a dotfiles/setup scripts repository containing shell installation script
 # Run a single Python script with uv
 uv run convert.py --help
 uv run enrich_json.py --help
+
+# Gallariz video workspace
+uv run ./gallariz new-project -n 0001 -t intro
+uv run ./gallariz convert video.mkv
+uv run ./gallariz compress 0001_CODING
 
 # Run with specific Python version
 uv run --python 3.11 convert.py file.mp4

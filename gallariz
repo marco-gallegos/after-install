@@ -1,0 +1,171 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">= 3.14"
+# dependencies = ["rich", "click"]
+# ///
+
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import click
+from rich.console import Console
+from rich.theme import Theme
+from rich.tree import Tree
+
+custom_theme = Theme({
+    "info": "cyan",
+    "warning": "yellow",
+    "error": "red bold",
+    "success": "green",
+    "title": "bold magenta",
+})
+console = Console(theme=custom_theme)
+
+TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
+IGNORE_PATTERNS = (".git", "__pycache__", "*.pyc")
+PROJECT_PATTERN = re.compile(r"^(\d{4})_(.+)$")
+
+
+def find_projects(workdir: Path) -> list[tuple[int, str, Path]]:
+    projects = []
+    for entry in workdir.iterdir():
+        if not entry.is_dir():
+            continue
+        match = PROJECT_PATTERN.match(entry.name)
+        if match:
+            projects.append((int(match.group(1)), match.group(2), entry))
+    return sorted(projects)
+
+
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    """Gallariz video workspace helper (migrated from the old Makefile)"""
+    if ctx.invoked_subcommand is None:
+        print_report()
+
+
+def print_report() -> None:
+    console.print("[title]=== Gallariz Workspace ===[/title]")
+
+    if TEMPLATE_DIR.is_dir():
+        files = [f for f in TEMPLATE_DIR.iterdir() if f.name not in IGNORE_PATTERNS]
+        console.print(f"[info]templates:[/info] [success]{TEMPLATE_DIR}[/success] ({len(files)} files)")
+    else:
+        console.print(f"[error]templates dir missing: {TEMPLATE_DIR}[/error]")
+
+    projects = find_projects(Path.cwd())
+    console.print(f"[info]projects in {Path.cwd()}:[/info] [success]{len(projects)}[/success]")
+    for number, name, _ in projects[-3:]:
+        console.print(f"  [success]{number:04d}_{name}[/success]")
+
+    console.print("\n[title]=== Commands ===[/title]")
+    console.print("  [info]gallariz new-project -n 0001 -t intro[/info] - Create project from template")
+    console.print("  [info]gallariz list[/info] - List latest 3 projects")
+    console.print("  [info]gallariz convert input.mkv[/info] - Convert video to H.265 NVENC")
+    console.print("  [info]gallariz compress myproject[/info] - Compress folder with 7zip (ultra)")
+
+
+@cli.command()
+@click.option("--number", "-n", default="0000", show_default=True, help="Project number (4 digits)")
+@click.option("--name", "-N", default="CODING", show_default=True, help="Project name")
+@click.option("--template", "-t", default=None, help="Template subfolder (default: templates/ root)")
+@click.option("--dir", "workdir", type=click.Path(file_okay=False, path_type=Path),
+              default=".", show_default=True, help="Workspace directory")
+def new_project(number: str, name: str, template: str | None, workdir: Path):
+    """Create a new project folder from the templates"""
+    if not re.fullmatch(r"\d{4}", number):
+        console.print(f"[error]number must be 4 digits: {number}[/error]")
+        sys.exit(1)
+
+    source = TEMPLATE_DIR / template if template else TEMPLATE_DIR
+    if not source.is_dir():
+        console.print(f"[error]template not found: {source}[/error]")
+        sys.exit(1)
+
+    target = workdir / f"{number}_{name}"
+    if target.exists():
+        console.print(f"[error]project already exists: {target}[/error]")
+        sys.exit(1)
+
+    console.print(f"[info]Creating project {target} from {source}...[/info]")
+    shutil.copytree(source, target, ignore=shutil.ignore_patterns(*IGNORE_PATTERNS))
+    console.print(f"[success]Project created successfully[/success]")
+
+
+@cli.command()
+@click.option("--all", "-a", "show_all", is_flag=True, help="Show all projects instead of the latest 3")
+@click.option("--dir", "workdir", type=click.Path(file_okay=False, path_type=Path),
+              default=".", show_default=True, help="Workspace directory")
+def list(show_all: bool, workdir: Path):
+    """List project folders (latest 3 by convention NNNN_NAME)"""
+    projects = find_projects(workdir)
+    if not projects:
+        console.print(f"[warning]no projects found in {workdir}[/warning]")
+        return
+
+    shown = projects if show_all else projects[-3:]
+    tree = Tree(f"[title]{workdir}[/title]")
+    for number, name, path in shown:
+        branch = tree.add(f"[success]{number:04d}_{name}[/success]")
+        for entry in sorted(path.iterdir()):
+            suffix = "/" if entry.is_dir() else ""
+            branch.add(f"[info]{entry.name}{suffix}[/info]")
+    console.print(tree)
+
+
+@cli.command()
+@click.argument("input_file", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+def convert(input_file: Path, yes: bool):
+    """Convert a video to H.265 NVENC (cq 28, preset p5, audio copy)"""
+    if input_file.suffix == ".mp4":
+        console.print("[error]input is already .mp4, refusing to overwrite it as output[/error]")
+        sys.exit(1)
+
+    output = input_file.with_suffix(".mp4")
+    console.print(f"[info]input:[/info] {input_file}")
+    console.print(f"[info]output:[/info] {output}")
+
+    if not yes and not click.confirm("¿Deseas continuar con la conversión?", default=False):
+        console.print("[warning]Conversión cancelada[/warning]")
+        sys.exit(1)
+
+    result = subprocess.run([
+        "ffmpeg", "-i", str(input_file),
+        "-c:v", "hevc_nvenc", "-cq", "28", "-preset", "p5",
+        "-c:a", "copy", str(output),
+    ])
+    if result.returncode != 0:
+        console.print(f"[error]ffmpeg failed with code {result.returncode}[/error]")
+        sys.exit(1)
+    console.print(f"[success]Conversión completada: {input_file} -> {output}[/success]")
+
+
+@cli.command()
+@click.argument("folder", type=click.Path(exists=True, file_okay=False, path_type=Path))
+def compress(folder: Path):
+    """Compress a folder using 7zip with maximum compression"""
+    archive = f"{folder.name}.7z"
+    console.print(f"[info]Comprimiendo {folder} con 7zip a máximo nivel...[/info]")
+    # a=add, -t7z=format, -mx=9=ultra, -mfb=64=max fast bytes,
+    # -md=256m=256MB dictionary, -ms=on=solid compression
+    result = subprocess.run(
+        ["7z", "a", "-t7z", "-mx=9", "-mfb=64", "-md=256m", "-ms=on", archive, f"{folder.name}/"],
+        cwd=folder.parent,
+    )
+    if result.returncode != 0:
+        console.print(f"[error]7z failed with code {result.returncode}[/error]")
+        sys.exit(1)
+    console.print(f"[success]Compresión completada: {folder} -> {archive}[/success]")
+
+
+def main() -> None:
+    cli()
+
+
+if __name__ == "__main__":
+    main()
