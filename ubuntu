@@ -1,3 +1,4 @@
+#!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">= 3.14"
 # dependencies = ["rich", "click"]
@@ -148,15 +149,16 @@ def get_sudo_password() -> str | None:
 def run_sudo(cmd: list[str], sudo_pass: str | None, timeout: int = 300) -> bool:
     try:
         if sudo_pass:
+            # -S reads the password from stdin; -p "" suppresses the prompt
             result = subprocess.run(
-                ["sudo"] + cmd,
+                ["sudo", "-S", "-p", ""] + cmd,
                 input=f"{sudo_pass}\n",
                 text=True,
                 timeout=timeout
             )
         else:
             result = subprocess.run(
-                ["sudo", "-n"] + cmd,
+                ["sudo"] + cmd,
                 timeout=timeout
             )
         if result.stdout:
@@ -172,6 +174,23 @@ def run_sudo(cmd: list[str], sudo_pass: str | None, timeout: int = 300) -> bool:
         return False
 
 
+def run_tool_update(name: str, cmd: list[str], sudo_pass: str | None = None, timeout: int = 120) -> None:
+    """Run a single tool's update command, reporting failures without aborting."""
+    console.print(f"[info]Updating {name}...[/info]")
+    try:
+        if sudo_pass:
+            if not run_sudo(cmd, sudo_pass, timeout=timeout):
+                console.print(f"[warning]{name} update failed[/warning]")
+            return
+        result = subprocess.run(cmd, timeout=timeout, text=True)
+        if result.stdout:
+            console.print(result.stdout)
+        if result.stderr:
+            console.print(f"[warning]{result.stderr}[/warning]")
+    except Exception as e:
+        console.print(f"[error]{name} update failed: {e}[/error]")
+
+
 @click.group()
 def cli():
     pass
@@ -179,7 +198,7 @@ def cli():
 
 @cli.command()
 def update():
-    """Update system packages and tools"""
+    """Update system packages, tools, and AI agents"""
     sudo_pass = get_sudo_password()
     pkg_mgr = results.get("package_manager", "apt")
 
@@ -236,12 +255,42 @@ def update():
 
     if shutil.which("snap"):
         console.print("[info]Updating snap packages...[/info]")
-        try:
-            result = subprocess.run(["sudo", "snap", "refresh"], timeout=300, text=True)
-            if result.stdout:
-                console.print(result.stdout)
-        except Exception as e:
-            console.print(f"[error]snap refresh failed: {e}[/error]")
+        if not run_sudo(["snap", "refresh"], sudo_pass, timeout=300):
+            console.print("[warning]snap refresh failed[/warning]")
+
+    console.print("\n[title]=== Agents & AI ===[/title]")
+
+    if shutil.which("opencode"):
+        run_tool_update("opencode", ["opencode", "upgrade"])
+
+    if shutil.which("claude"):
+        run_tool_update("claude", ["claude", "update"])
+
+    if shutil.which("pi"):
+        run_tool_update("pi", ["pi", "update"], timeout=300)
+
+    if shutil.which("whisper"):
+        # Ubuntu 24.04+ marks the system python externally managed (PEP 668)
+        run_tool_update(
+            "whisper",
+            ["pip3", "install", "--user", "-U", "--break-system-packages", "openai-whisper"],
+            timeout=600,
+        )
+
+    if shutil.which("laya"):
+        run_tool_update("laya", ["uv", "tool", "upgrade", "laya"], timeout=300)
+
+    if shutil.which("ollama"):
+        if subprocess.run(["dpkg", "-s", "ollama"], capture_output=True).returncode == 0:
+            console.print("[info]ollama is apt-managed, already covered by the package upgrade[/info]")
+        else:
+            # script installs have no self-update command; the official installer updates in place
+            run_tool_update(
+                "ollama",
+                ["bash", "-c", "set -o pipefail; curl -fsSL https://ollama.com/install.sh | sh"],
+                sudo_pass,
+                timeout=600,
+            )
 
     console.print("[success]Update complete![/success]")
 
@@ -334,10 +383,10 @@ def print_results():
     console.print(f"[success]Thread completed in {results.get('duration', 0):.2f} seconds[/success]")
 
     console.print("\n[title]=== Commands ===[/title]")
-    console.print("  [info]uv run ubuntu update[/info] - Update system packages")
-    console.print("  [info]uv run ubuntu extensions[/info] - Install extensions on detected IDEs")
-    console.print("  [info]uv run ubuntu extensions --list[/info] - List available extensions")
-    console.print("  [info]uv run ubuntu extensions -i vscode -i trae[/info] - Install on specific IDEs")
+    console.print("  [info]uv run ./ubuntu update[/info] - Update system packages")
+    console.print("  [info]uv run ./ubuntu extensions[/info] - Install extensions on detected IDEs")
+    console.print("  [info]uv run ./ubuntu extensions --list[/info] - List available extensions")
+    console.print("  [info]uv run ./ubuntu extensions -i vscode -i trae[/info] - Install on specific IDEs")
 
 
 if __name__ == "__main__":

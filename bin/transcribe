@@ -1,0 +1,191 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = []
+# ///
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+AUDIO_EXTENSIONS = {
+    ".mp3",
+    ".wav",
+    ".flac",
+    ".ogg",
+    ".oga",
+    ".opus",
+    ".m4a",
+    ".aac",
+    ".wma",
+    ".aiff",
+    ".aif",
+    ".alac",
+    ".amr",
+    ".ac3",
+}
+
+VIDEO_EXTENSIONS = {
+    ".mp4",
+    ".mkv",
+    ".mov",
+    ".avi",
+    ".webm",
+    ".flv",
+    ".wmv",
+    ".m4v",
+    ".mpg",
+    ".mpeg",
+    ".ts",
+    ".m2ts",
+    ".3gp",
+}
+
+
+def get_output_dir(input_path: Path) -> Path:
+    return input_path.parent / input_path.stem
+
+
+def transcribe(
+    input_path: Path,
+    model: str,
+    device: str,
+    language: str | None,
+    task: str,
+    word_timestamps: bool,
+    output_format: str,
+) -> bool:
+    if not input_path.exists():
+        print(f"Error: File not found: {input_path}")
+        return False
+
+    suffix = input_path.suffix.lower()
+    if suffix not in AUDIO_EXTENSIONS and suffix not in VIDEO_EXTENSIONS:
+        print(
+            f"Error: '{input_path.name}' does not look like an audio or video file "
+            f"(extension '{input_path.suffix}' is not supported)."
+        )
+        return False
+
+    output_dir = get_output_dir(input_path)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        "whisper",
+        str(input_path),
+        "--output_dir",
+        str(output_dir),
+        "--output_format",
+        output_format,
+        "--model",
+        model,
+        "--device",
+        device,
+        "--task",
+        task,
+        "--verbose",
+        "True",
+    ]
+    if language:
+        cmd.extend(["--language", language])
+    if word_timestamps:
+        cmd.extend(["--word_timestamps", "True"])
+
+    print(f"Transcribing: {input_path.name}")
+    print(f"Output dir:   {output_dir}")
+    print(f"Model:        {model}")
+    print(f"Device:       {device}")
+    print(f"Command:      {' '.join(cmd)}")
+    print("-" * 40)
+
+    try:
+        result = subprocess.run(cmd)
+    except FileNotFoundError:
+        print("Error: 'whisper' executable not found. Install it first.")
+        return False
+
+    if result.returncode != 0:
+        return False
+
+    print("-" * 40)
+    print(f"Done. Outputs written to: {output_dir}")
+    for produced in sorted(output_dir.iterdir()):
+        if produced.is_file():
+            print(f"  {produced.name}")
+    return True
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Transcribe an audio or video file with Whisper. "
+            "Creates a folder named after the file (without extension) "
+            "containing every output format the model can produce."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "files",
+        nargs="+",
+        help="Input audio/video file(s) to transcribe",
+    )
+    parser.add_argument(
+        "-m",
+        "--model",
+        default="turbo",
+        help="Whisper model name to use, e.g. tiny, base, small, medium, "
+        "large, turbo (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-d",
+        "--device",
+        default="cuda",
+        help="Device for PyTorch inference, e.g. cuda or cpu (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-l",
+        "--language",
+        default=None,
+        help="Spoken language code, e.g. en, de (default: autodetect)",
+    )
+    parser.add_argument(
+        "-t",
+        "--task",
+        default="transcribe",
+        choices=["transcribe", "translate"],
+        help="Task to perform (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-f",
+        "--format",
+        dest="output_format",
+        default="all",
+        choices=["txt", "vtt", "srt", "tsv", "json", "all"],
+        help="Output format; 'all' produces every available format "
+        "(default: %(default)s)",
+    )
+    parser.add_argument(
+        "-w",
+        "--word-timestamps",
+        action="store_true",
+        help="Enable word-level timestamps in the output",
+    )
+    args = parser.parse_args()
+
+    for file_path in args.files:
+        input_path = Path(file_path).resolve()
+        success = transcribe(
+            input_path,
+            model=args.model,
+            device=args.device,
+            language=args.language,
+            task=args.task,
+            word_timestamps=args.word_timestamps,
+            output_format=args.output_format,
+        )
+        if not success:
+            print(f"Failed: {input_path}")
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

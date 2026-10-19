@@ -4,7 +4,8 @@ This is a dotfiles/setup scripts repository containing shell installation script
 
 ## Project Structure
 
-- `*.sh` - Installation scripts for different OSes (fedora32.sh, manjaro.sh, ubuntu.sh, etc.)
+- `*.sh` - Installation scripts for different OSes (fedora32.sh, manjaro.sh, etc.)
+- `ubuntu` - Ubuntu installer/updater (Python, run with `uv run ./ubuntu`)
 - `bash/`, `nvim/`, `alacritty/`, `kitty/`, `zsh/` - Configuration directories
 - `bin/` - Utility scripts
 - `convert.py`, `enrich_json.py` - Python utilities (use `uv run`)
@@ -32,7 +33,7 @@ ruff format convert.py enrich_json.py
 
 ```bash
 # Shellcheck linting
-shellcheck fedora32.sh manjaro.sh ubuntu.sh
+shellcheck fedora32.sh manjaro.sh
 
 # Check a specific script
 shellcheck bin/bak
@@ -118,7 +119,7 @@ backup_file "$1"
 sudo bash fedora33.sh
 
 # Ubuntu
-bash ubuntu.sh
+uv run ./ubuntu
 
 # macOS
 bash osx_monterrey.sh
